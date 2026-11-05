@@ -3,843 +3,416 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Galeria — Trend</title>
+  <title>Galeria — Horizon</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- Montserrat: a mesma família do texto corrido do book -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Poppins em todo o projeto -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      /* TREND · Saraiva de Rezende
-         --bg = verde (45923A), cor primária · --accent = creme (E8E4D5), cor secundária */
-      --bg: #45923A;            /* verde — cor primária */
-      --bg-2: #14230F;          /* verde profundo — palco do lightbox */
-      --surface: #3C8232;       /* superfície de card (skeleton) */
-      --surface-2: #57A24B;     /* superfície elevada / hover */
-      --dark: #FFFFFF;          /* foreground / texto principal */
-      --text-soft: rgba(255,255,255,0.72);
-      --border: rgba(255,255,255,0.26);
-      --border-strong: rgba(255,255,255,0.55);
-      --accent: #E8E4D5;        /* creme — cor secundária / estado ativo */
-      --accent-ink: #1F4A1A;    /* texto sobre o creme */
-      --accent-soft: rgba(232,228,213,0.16);
-      --dark-bg: #14230F;       /* backdrop do lightbox */
-      --white: #FFFFFF;
-      --plan-paper: #FFFFFF;    /* papel das plantas (desenho precisa de fundo claro) */
-      --plan-ink: #1F3A1B;
-      --font-serif: 'Montserrat', system-ui, sans-serif;
-      --font-sans: 'Montserrat', system-ui, sans-serif;
-      --ease: cubic-bezier(0.4, 0, 0.2, 1);
-      --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      /* HORIZON · Make it — vinho 8A122B, vermelho A6122B e creme FFFCF2 */
+      --wine: #8A122B;
+      --red: #A6122B;
+      --cream: #FFFCF2;
+      --wine-deep: #4A0A17;           /* vinho profundo: só sombras e palco do lightbox */
+      --ink: #8A122B;                 /* texto sobre o creme */
+      --cream-70: rgba(255,252,242,0.72);
+      --cream-40: rgba(255,252,242,0.40);
+      --cream-20: rgba(255,252,242,0.20);
+      --cream-10: rgba(255,252,242,0.10);
+      --cream-06: rgba(255,252,242,0.06);
+      --font-serif: 'Poppins', system-ui, sans-serif;
+      --font-sans: 'Poppins', system-ui, sans-serif;
+      --soft: cubic-bezier(0.22, 0.8, 0.24, 1);        /* desaceleração longa, sem trancos */
+      --flow: cubic-bezier(0.5, 1.35, 0.4, 1);         /* leve elasticidade (a "gota" dos chips) */
+      --gap: 18px;
+      --pad: clamp(14px, 2.6vw, 36px);
+      --k: 1;                                          /* escala dos raios orgânicos */
     }
 
-    /* O bg.svg é o fundo do design: verde com o monograma "T" a 10 %,
-       que entra deslizando uma vez e fica. A cor sólida por baixo cobre o
-       instante antes de o SVG carregar. */
+    /* O bg.svg é o fundo do design (vinho + fragmentos do H a 10 %); o degradê e
+       as manchas por cima dão a profundidade. A cor sólida cobre o instante
+       antes do SVG carregar. */
     html, body {
       height: 100%;
       overflow: hidden;
-      background: var(--bg) url('assets/brand/bg.svg') center / cover no-repeat;
-      color: var(--dark);
+      background: var(--wine) url('assets/brand/bg.svg') center / cover no-repeat fixed;
+      color: var(--cream);
       font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* ── ROOT LAYOUT ── */
-    #g-root {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      background: transparent;
-      position: relative;
-      z-index: 2;
+    /* ── CAMADA ATMOSFÉRICA ─────────────────────────────────────── */
+    #atmos { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    #atmos::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(155deg, rgba(166,18,43,0.55) 0%, rgba(138,18,43,0) 48%, rgba(166,18,43,0.5) 100%);
     }
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(40px); opacity: 0;
+      animation: blobIn 2.4s ease forwards, drift var(--t) ease-in-out infinite alternate;
+      will-change: transform;
+    }
+    .blob.b1 { width: 62vmax; height: 62vmax; left: -22vmax; top: -26vmax; --t: 28s;
+      background: radial-gradient(circle at 40% 40%, var(--red), transparent 66%); }
+    .blob.b2 { width: 48vmax; height: 48vmax; right: -16vmax; top: 18vh; --t: 34s; animation-delay: .4s, 0s;
+      background: radial-gradient(circle at 50% 50%, rgba(255,252,242,0.20), transparent 64%); }
+    .blob.b3 { width: 56vmax; height: 56vmax; left: 12vw; bottom: -30vmax; --t: 31s; animation-delay: .8s, 0s;
+      background: radial-gradient(circle at 50% 50%, var(--red), transparent 66%); }
+    @keyframes blobIn { to { opacity: 1; } }
+    @keyframes drift {
+      0%   { transform: translate3d(0, 0, 0) scale(1); }
+      50%  { transform: translate3d(7vw, 5vh, 0) scale(1.12); }
+      100% { transform: translate3d(-5vw, 9vh, 0) scale(0.94); }
+    }
+    /* luz que acompanha o cursor, com atraso (lerp no JS) */
+    #glow {
+      position: absolute; left: 0; top: 0; width: 520px; height: 520px; margin: -260px 0 0 -260px;
+      border-radius: 50%; opacity: 0; transition: opacity 0.8s ease;
+      background: radial-gradient(circle, rgba(255,252,242,0.13), transparent 62%);
+      will-change: transform;
+    }
+    #glow.on { opacity: 1; }
 
-    /* ── HEADER ── */
-    #g-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 10px 24px 10px 36px;
-      border-bottom: 1px solid var(--border);
+    /* ── LAYOUT ─────────────────────────────────────────────────── */
+    #g-root { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+
+    /* ── TOPO (pílula de vidro) ─────────────────────────────────── */
+    #g-top {
       flex-shrink: 0;
+      display: flex; align-items: center; gap: 18px;
+      margin: 14px var(--pad) 0;
+      padding: 10px 12px 10px 28px;
+      border-radius: 14px;
+      background: linear-gradient(120deg, rgba(255,252,242,0.14), rgba(255,252,242,0.06));
+      border: 1px solid var(--cream-20);
+      -webkit-backdrop-filter: blur(20px) saturate(1.25); backdrop-filter: blur(20px) saturate(1.25);
+      box-shadow: 0 18px 40px -18px rgba(40,0,10,0.6), inset 0 1px 0 rgba(255,252,242,0.18);
+      animation: dropIn 1s var(--soft) both;
     }
+    @keyframes dropIn { from { opacity: 0; transform: translateY(-26px); filter: blur(8px); } to { opacity: 1; transform: none; filter: none; } }
 
-    #g-logo {
-      /* Logo TREND + assinatura "Feito para viver o amanhã, agora.", já com o
-         viewBox encostado no desenho. Abaixo de ~64px a assinatura fica ilegível.
-         A animação de escrita roda uma vez; com prefers-reduced-motion o
-         próprio SVG pula direto para o quadro final. */
-      height: clamp(64px, 6.4vw, 92px);
-      width: auto;
-      display: block;
-      flex-shrink: 0;
+    #g-logo { height: clamp(34px, 3.8vw, 50px); width: auto; display: block; flex-shrink: 0; }
+
+    #chips {
+      position: relative; flex: 1; min-width: 0;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      overflow-x: auto; scrollbar-width: none; padding: 4px;
     }
+    #chips::-webkit-scrollbar { display: none; }
+    /* a "gota" de creme que escorrega até o chip ativo */
+    .chip-ink {
+      position: absolute; left: 0; top: 0; width: 0; height: 0;
+      border-radius: 9px; background: var(--cream);
+      box-shadow: 0 8px 22px -6px rgba(40,0,10,0.55);
+      transition: transform 0.7s var(--flow), width 0.7s var(--flow), height 0.7s var(--flow);
+      pointer-events: none;
+    }
+    .chip {
+      position: relative; z-index: 1;
+      padding: 10px 22px; border: none; background: transparent; cursor: pointer;
+      font: 600 11.5px/1 var(--font-sans); letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--cream); white-space: nowrap; border-radius: 9px;
+      transition: color 0.45s var(--soft), transform 0.3s var(--soft);
+    }
+    .chip:hover { transform: translateY(-1px); }
+    .chip.active { color: var(--wine); }
+    .chip .n { font-weight: 500; opacity: 0.55; margin-left: 6px; letter-spacing: 0.02em; }
 
     #btn-close {
-      width: 38px;
-      height: 38px;
-      border: 1px solid var(--border-strong);
-      background: transparent;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: background 0.25s var(--ease), color 0.25s var(--ease);
-      color: var(--dark);
-    }
-    #btn-close:hover { background: var(--dark); color: var(--bg); border-color: var(--dark); }
-
-    /* ── FILTER SECTION ── */
-    #g-filters {
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    #filter-main {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 14px 36px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    #filter-main::-webkit-scrollbar { display: none; }
-
-    /* peso 600: branco sobre o verde tem contraste moderado, o traço mais
-       cheio mantém os rótulos pequenos legíveis */
-    .f-btn {
-      padding: 7px 20px;
-      border: 1px solid var(--border-strong);
-      background: transparent;
-      cursor: pointer;
-      font-family: var(--font-sans);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      color: var(--dark);
-      white-space: nowrap;
-      border-radius: 40px;
-      transition: background 0.22s var(--ease), color 0.22s var(--ease), border-color 0.22s var(--ease), transform 0.15s var(--ease);
-    }
-    .f-btn:hover { border-color: var(--accent); background: var(--accent-soft); }
-    .f-btn.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 4px 14px rgba(0,0,0,0.35); }
-    .f-btn:active { transform: scale(0.97); }
-
-    /* Sub-filter */
-    #filter-sub {
-      overflow: hidden;
-      max-height: 0;
-      opacity: 0;
-      transition: max-height 0.38s var(--ease), opacity 0.3s ease;
-    }
-    #filter-sub.open { max-height: 56px; opacity: 1; }
-
-    #filter-sub-inner {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 8px 36px 13px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    #filter-sub-inner::-webkit-scrollbar { display: none; }
-
-    /* Mesmo contraste do filtro principal (borda forte, sem opacidade
-       reduzida). A hierarquia vem só do tamanho e da caixa (sem uppercase). */
-    .sf-btn {
-      padding: 6px 17px;
-      border: 1px solid var(--border-strong);
-      background: transparent;
-      cursor: pointer;
-      font-family: var(--font-sans);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      color: var(--dark);
-      white-space: nowrap;
-      border-radius: 40px;
-      transition: border-color 0.22s var(--ease), background 0.22s var(--ease), color 0.22s var(--ease);
-    }
-    .sf-btn:hover { border-color: var(--accent); background: var(--accent-soft); }
-    .sf-btn.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 4px 14px rgba(0,0,0,0.35); }
-
-    /* ── GALLERY SCROLL ── */
-    #g-scroll {
-      flex: 1;
-      overflow-y: auto;
-      scroll-behavior: smooth;
-    }
-    #g-scroll::-webkit-scrollbar { width: 5px; }
-    #g-scroll::-webkit-scrollbar-track { background: var(--bg); }
-    #g-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
-
-    /* ── GRID ── */
-    #g-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      padding: 14px;
-    }
-    @media (max-width: 1100px) { #g-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 700px)  { #g-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 420px)  { #g-grid { grid-template-columns: 1fr; } }
-
-    /* ── SKELETON SHIMMER ── */
-    @keyframes shimmer {
-      0%   { background-position: -400px 0; }
-      100% { background-position:  400px 0; }
-    }
-    .g-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        90deg,
-        rgba(255,255,255,0.03) 0%,
-        rgba(255,255,255,0.10) 40%,
-        rgba(255,255,255,0.03) 80%
-      );
-      background-size: 800px 100%;
-      animation: shimmer 1.4s infinite linear;
-      z-index: 0;
-      transition: opacity 0.3s ease;
-    }
-    .g-card.loaded::before { opacity: 0; pointer-events: none; }
-
-    /* ── CARD BASE ── */
-    .g-card {
-      position: relative;
-      aspect-ratio: 4/3;
-      overflow: hidden;
-      cursor: pointer;
-      background: var(--surface);
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.28);
-      animation: cardIn 0.55s var(--spring) both;
-      transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease), border-color 0.4s var(--ease);
-    }
-    .g-card:hover {
-      transform: translateY(-5px);
-      border-color: var(--accent);
-      box-shadow: 0 16px 38px rgba(0,0,0,0.42), 0 0 0 1px var(--accent-soft);
-    }
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(14px) scale(0.98); filter: blur(4px); }
-      to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-    }
-
-    .g-card img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
-      opacity: 0;
-      transition: opacity 0.35s ease, transform 0.65s var(--ease);
-      position: relative;
-      z-index: 1;
-    }
-    .g-card.loaded img { opacity: 1; }
-    .g-card:hover img { transform: scale(1.06); }
-
-    .card-overlay {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      padding: 32px 14px 13px;
-      background: linear-gradient(to top, rgba(20,35,15,0.90) 0%, rgba(20,35,15,0.50) 58%, transparent 100%);
-      color: #FFFFFF;
-      opacity: 0;
-      transition: opacity 0.35s ease;
-      z-index: 2;
-    }
-    .g-card.loaded .card-overlay { opacity: 1; }
-
-    .card-title {
-      font-family: var(--font-sans);
-      font-size: 12.5px;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-      line-height: 1.35;
-      text-shadow: 0 1px 6px rgba(0,0,0,0.8);
-    }
-    .card-sub {
-      font-size: 10px;
-      font-weight: 400;
-      /* sem uppercase: as legendas trazem "m²", que viraria "M²" */
-      letter-spacing: 0.07em;
-      opacity: 0.78;
-      margin-top: 4px;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.7);
-    }
-
-    .card-zoom {
-      position: absolute;
-      top: 14px; right: 14px;
-      width: 34px; height: 34px;
-      background: var(--accent);
-      border-radius: 50%;
+      width: 44px; height: 44px; flex-shrink: 0; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      opacity: 0;
-      transform: scale(0.75);
-      transition: opacity 0.25s var(--ease), transform 0.3s var(--spring);
-      color: var(--accent-ink);
-      box-shadow: 0 4px 14px rgba(0,0,0,0.45);
-      z-index: 2;
+      border: 1px solid var(--cream-40); background: var(--cream-06); color: var(--cream);
+      border-radius: 50%;
+      transition: background 0.4s var(--soft), color 0.4s var(--soft), transform 0.6s var(--flow);
     }
-    .g-card.loaded:hover .card-zoom { opacity: 1; transform: scale(1); }
+    #btn-close:hover { background: var(--cream); color: var(--wine); transform: rotate(90deg); }
 
-    /* Plant card */
-    .g-card.is-plant { background: var(--plan-paper); }
-    .g-card.is-plant img { object-fit: contain; padding: 12px; }
-    .g-card.is-plant::before {
-      background: linear-gradient(
-        90deg,
-        rgba(0,0,0,0.04) 0%,
-        rgba(0,0,0,0.09) 40%,
-        rgba(0,0,0,0.04) 80%
-      );
-      background-size: 800px 100%;
-    }
+    /* ── ÁREA ROLÁVEL ──────────────────────────────────────────── */
+    #g-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; padding: 6px var(--pad) 0; }
+    #g-scroll::-webkit-scrollbar { width: 6px; }
+    #g-scroll::-webkit-scrollbar-track { background: transparent; }
+    #g-scroll::-webkit-scrollbar-thumb { background: var(--cream-40); border-radius: 6px; }
+    #g-grid { width: 80%; max-width: 2000px; margin: 0 auto; transition: opacity 0.3s var(--soft), transform 0.3s var(--soft), filter 0.3s var(--soft); }
+    #g-grid.leaving { opacity: 0; transform: translateY(-12px) scale(0.985); filter: blur(8px); }
 
-    /* ── COBERTURA SPECIAL CARD ── */
-    .g-card.cob-card {
-      grid-column: span 2;
-      aspect-ratio: unset;
-      cursor: default;
-      display: flex;
-      flex-direction: column;
-      background: var(--plan-paper);
-      color: var(--plan-ink);        /* tinta escura sobre o papel claro das plantas */
-      border: 1px solid rgba(0,0,0,0.10);
+    /* ── BLOCO (uma categoria) ─────────────────────────────────── */
+    .block { padding: clamp(26px, 4vw, 56px) 0 clamp(8px, 2vw, 24px); }
+    .block-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: clamp(16px, 2.4vw, 30px); }
+    .block-title {
+      font: 300 clamp(28px, 3.6vw, 48px)/1.1 var(--font-serif);
+      letter-spacing: -0.02em;
     }
-    .g-card.cob-card:hover { transform: none; box-shadow: 0 6px 20px rgba(0,0,0,0.28); border-color: rgba(0,0,0,0.10); }
-    .g-card.cob-card::before { display: none; }
-    @media (max-width: 700px) { .g-card.cob-card { grid-column: span 2; } }
-    @media (max-width: 420px) { .g-card.cob-card { grid-column: span 1; } }
+    .block-title em { font-style: italic; font-weight: 300; color: var(--cream-70); }
+    .block-meta { font: 500 11px/1 var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--cream-70); padding-bottom: 8px; white-space: nowrap; }
+    .rule { display: block; width: clamp(120px, 16vw, 220px); height: 2px; margin-top: 14px; background: var(--cream-40); transform: scaleX(0); transform-origin: left; transition: transform 1.6s var(--soft) 0.3s; }
+    .block.in .rule { transform: none; }
 
-    /* ── PLANTAS MODE ── */
-    #g-grid.plantas-mode {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      padding: 10px;
-    }
-    #g-grid.plantas-mode .g-card.is-plant,
-    #g-grid.plantas-mode .g-card.cob-card {
-      height: min(600px, calc(100vh - 180px));
-    }
-    #g-grid.plantas-mode .g-card.is-plant {
-      aspect-ratio: unset;
-    }
-    /* cada tipologia é um card único (o filtro principal já separa) —
-       ocupa a largura toda para o desenho respirar */
-    #g-grid.plantas-mode .g-card.cob-card {
-      grid-column: 1 / -1;
-    }
-    #g-grid.plantas-mode .cob-body {
-      min-height: 0;
-    }
-    @media (max-width: 700px) {
-      #g-grid.plantas-mode { grid-template-columns: 1fr; gap: 8px; padding: 8px; }
-      #g-grid.plantas-mode .g-card.cob-card { grid-column: span 1; }
+    /* ── MOSAICO ───────────────────────────────────────────────── */
+    .mosaic {
+      display: grid; grid-template-columns: repeat(12, 1fr);
+      grid-auto-rows: var(--u, 84px); grid-auto-flow: dense;
+      gap: var(--gap); padding-bottom: 14px;
     }
 
-    .cob-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 22px 14px;
-      border-bottom: 1px solid rgba(0,0,0,0.10);
-      flex-shrink: 0;
-      flex-wrap: wrap;
-      gap: 12px;
+    /* revelar ao rolar: surge de baixo, desfocado, e assenta */
+    .reveal {
+      opacity: 0; transform: translateY(46px) scale(0.955); filter: blur(10px);
+      transition:
+        opacity 1s var(--soft) var(--d, 0s),
+        transform 1.2s var(--soft) var(--d, 0s),
+        filter 1s var(--soft) var(--d, 0s),
+        border-radius 0.9s var(--soft),
+        box-shadow 0.7s var(--soft);
     }
+    .reveal.in { opacity: 1; transform: none; filter: none; }
 
-    .cob-badge {
-      display: inline-block;
-      padding: 3px 11px;
-      background: var(--bg);    /* o card de planta é branco: o selo vai no verde */
-      color: var(--white);
-      font-size: 8.5px;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      border-radius: 40px;
-      margin-bottom: 5px;
+    /* ── CARTÃO (foto) ─────────────────────────────────────────── */
+    .tile {
+      position: relative; display: block; width: 100%; height: 100%; padding: 0; text-align: left;
+      grid-column: var(--cs, auto) / span var(--c, 4); grid-row: span var(--r, 4);
+      border: 1px solid var(--cream-20); cursor: pointer; color: var(--cream);
+      background: linear-gradient(110deg, var(--cream-06) 30%, var(--cream-20) 50%, var(--cream-06) 70%) 0 0 / 220% 100%;
+      animation: shimmer 2.2s linear infinite;
+      overflow: hidden; isolation: isolate;
+      box-shadow: 0 22px 44px -22px rgba(40,0,10,0.7);
+      font-family: inherit;
     }
+    .tile.ready { animation: none; background: var(--wine-deep); }
+    @keyframes shimmer { to { background-position: -220% 0; } }
+    /* formas orgânicas: a cada cartão, uma silhueta — e ao passar o mouse ela vira a oposta */
+    .tile { border-radius: 6px; }
+    .tile:hover { border-radius: 18px; }
 
-    .cob-name {
-      font-family: var(--font-sans);
-      font-size: 16px;
-      font-weight: 500;
-      letter-spacing: 0.04em;
+    .tile > img {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+      opacity: 0; filter: blur(18px);
+      transform: scale(1.01);
+      transition: opacity 1s var(--soft), filter 1.1s var(--soft), transform 1s var(--soft);
     }
-    .cob-area {
-      font-size: 11px;
-      opacity: 0.4;
-      margin-top: 2px;
-      letter-spacing: 0.04em;
-    }
-    .cob-sub {
-      font-size: 10px;
-      font-weight: 400;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      opacity: 0.45;
-      margin-top: 4px;
-    }
-    /* legenda do pavimento ativo — acompanha a aba selecionada */
-    .cob-note {
-      font-size: 11px;
-      letter-spacing: 0.02em;
-      color: rgba(31,58,27,0.72);
-      margin-top: 6px;
-      min-height: 15px;
-    }
-    .cob-note:empty { display: none; }
+    .tile.ready > img { opacity: 1; filter: none; }
+    .tile:hover > img { transform: scale(1.04); }
 
-    /* Floor tab switcher */
-    .floor-tabs {
-      display: flex;
-      padding: 3px;
-      border: 1px solid var(--border-strong);
-      border-radius: 40px;
-      background: var(--bg);
-      flex-shrink: 0;
+    /* brilho que segue o cursor dentro do cartão */
+    .tile-glow {
+      position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0;
+      background: radial-gradient(360px circle at var(--px, 50%) var(--py, 50%), rgba(255,252,242,0.30), transparent 60%);
+      mix-blend-mode: soft-light; transition: opacity 0.6s var(--soft);
     }
-    .floor-tab {
-      padding: 5px 16px;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      font-family: var(--font-sans);
-      font-size: 10.5px;
-      font-weight: 500;
-      letter-spacing: 0.05em;
-      color: var(--dark);
-      opacity: 0.85;   /* legível já no estado inativo; a aba ativa é o sálvia cheio */
-      border-radius: 40px;
-      white-space: nowrap;
-      transition: background 0.22s var(--ease), color 0.22s var(--ease), opacity 0.22s;
-    }
-    .floor-tab:hover { opacity: 1; background: var(--accent-soft); }
-    .floor-tab.active { background: var(--accent); color: var(--accent-ink); opacity: 1; }
+    .tile:hover .tile-glow { opacity: 0; }
 
-    /* Floor image area */
-    .cob-body {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-      min-height: 280px;
-    }
-    .floor-wrap {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      opacity: 0;
+    .tile-cap {
+      position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+      padding: 36px 16px 12px;
+      background: linear-gradient(to top, rgba(74,10,23,0.88) 0%, rgba(74,10,23,0.45) 55%, transparent 100%);
       pointer-events: none;
-      transition: opacity 0.38s ease;
     }
-    .floor-wrap.active { opacity: 1; pointer-events: auto; }
+    .tile-cap b { display: block; font: 500 clamp(12px, 0.95vw, 14px)/1.2 var(--font-serif); letter-spacing: -0.01em; }
+    .tile-cap i { display: block; margin-top: 3px; font: 400 9px/1.3 var(--font-sans); font-style: normal; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cream-70); }
 
-    /* skeleton inside cob body */
-    .floor-skeleton {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        90deg,
-        rgba(0,0,0,0.05) 0%,
-        rgba(0,0,0,0.11) 40%,
-        rgba(0,0,0,0.05) 80%
-      );
-      background-size: 800px 100%;
-      animation: shimmer 1.4s infinite linear;
-      transition: opacity 0.3s ease;
-      z-index: 0;
+    .tile-zoom {
+      position: absolute; top: 16px; right: 16px; z-index: 3;
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--cream); color: var(--wine);
+      opacity: 0; transform: scale(0.5) rotate(-40deg);
+      transition: opacity 0.4s var(--soft), transform 0.7s var(--flow);
+      box-shadow: 0 8px 20px rgba(40,0,10,0.45);
     }
-    .cob-body.loaded .floor-skeleton { opacity: 0; pointer-events: none; }
+    .tile.ready:hover .tile-zoom { opacity: 1; transform: none; }
+    .tile:focus-visible { outline: 2px solid var(--cream); outline-offset: 4px; }
 
-    .floor-wrap img {
-      max-width: 100%; max-height: 100%;
-      object-fit: contain;
-      width: 100%; height: 100%;
-      cursor: zoom-in;
+    /* ── CARTÃO "PAPEL" (plantas e implantação: desenho sobre creme) ─ */
+    .tile.paper { background: var(--cream); border-color: var(--cream); animation: none; box-shadow: 0 30px 60px -26px rgba(40,0,10,0.75); color: var(--ink); }
+    .tile.paper > img { object-fit: contain; padding: 20px 20px 64px; transform: scale(1); filter: none; }
+    .tile.paper:hover > img { transform: scale(1.04); }
+    .tile.paper .tile-glow { background: radial-gradient(380px circle at var(--px, 50%) var(--py, 50%), rgba(166,18,43,0.14), transparent 62%); mix-blend-mode: multiply; }
+    .paper-tag { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; padding: 14px 20px 16px; pointer-events: none; }
+    .paper-tag b { font: 500 15px/1 var(--font-sans); color: var(--wine); letter-spacing: 0.02em; }
+    .paper-tag i { font: 400 10.5px/1 var(--font-sans); font-style: normal; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(138,18,43,0.62); }
+    .tile.paper .tile-zoom { background: var(--wine); color: var(--cream); opacity: 1; transform: none; top: auto; bottom: 16px; right: 16px; }
+    .tile.paper:hover .tile-zoom { transform: scale(1.12) rotate(8deg); }
+
+    /* ── PLANTAS: um cartão, duas plantas alternadas por botão ── */
+    .plan-card { background: var(--cream); color: var(--wine); border-radius: 14px; overflow: hidden; box-shadow: 0 30px 60px -26px rgba(40,0,10,0.75); }
+    .plan-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px; border-bottom: 1px solid rgba(138,18,43,0.14); }
+    .plan-name { font: 500 14px/1.2 var(--font-sans); } .plan-name small { display: block; margin-top: 4px; font: 400 9.5px/1 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; color: rgba(138,18,43,0.62); }
+    .plan-tabs { display: flex; gap: 4px; padding: 4px; border: 1px solid rgba(138,18,43,0.28); border-radius: 10px; }
+    .plan-tab { padding: 9px 20px; border: 0; background: transparent; color: var(--wine); cursor: pointer; font: 600 10.5px/1 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; border-radius: 7px; transition: background 0.4s var(--soft), color 0.4s var(--soft); }
+    .plan-tab.active { background: var(--wine); color: var(--cream); }
+    .plan-body { position: relative; height: min(64vh, 620px); }
+    .plan-body img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 22px; cursor: zoom-in; opacity: 0; transition: opacity 0.6s var(--soft); }
+    .plan-body img.active { opacity: 1; }
+    .plan-foot { padding: 10px 20px 14px; font: 500 9.5px/1 var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; color: rgba(138,18,43,0.55); }
+
+    /* ── DESTAQUE · ENTORNO 3D ─────────────────────────────────── */
+    .hero {
+      position: relative; isolation: isolate; overflow: hidden;
+      display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 2.2fr); align-items: center; gap: clamp(8px, 2vw, 36px);
+      min-height: min(76vh, 720px);
+      padding: clamp(22px, 3.4vw, 52px);
+      border-radius: 14px;
+      border: 1px solid var(--cream-40);
+      background:
+        radial-gradient(90% 85% at 68% 46%, rgba(255,252,242,0.28), rgba(255,252,242,0.07) 55%, transparent 76%),
+        linear-gradient(135deg, rgba(255,252,242,0.13), rgba(166,18,43,0.35));
+      box-shadow: 0 50px 90px -40px rgba(40,0,10,0.9), inset 0 1px 0 rgba(255,252,242,0.3);
+      transition: border-radius 1.2s var(--soft);
+    }
+    .hero:hover { border-radius: 24px; }
+    .hero::before, .hero::after {
+      content: ''; position: absolute; z-index: -1; border-radius: 50%; filter: blur(34px); pointer-events: none;
+      animation: drift 22s ease-in-out infinite alternate;
+    }
+    .hero::before { width: 62%; aspect-ratio: 1; right: -12%; top: -34%; background: radial-gradient(circle, var(--red), transparent 66%); }
+    .hero::after  { width: 46%; aspect-ratio: 1; left: -10%; bottom: -36%; background: radial-gradient(circle, rgba(255,252,242,0.30), transparent 66%); animation-duration: 29s; }
+
+    .hero-text { position: relative; z-index: 2; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 9px; padding: 7px 15px 7px 12px; border-radius: 30px; background: var(--cream); color: var(--wine); font: 600 10px/1 var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase; }
+    .eyebrow::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: pulse 2.4s ease-out infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(166,18,43,0.55); } 70%, 100% { box-shadow: 0 0 0 12px rgba(166,18,43,0); } }
+    .hero h2 { margin-top: 18px; font: 300 clamp(36px, 4.6vw, 66px)/1 var(--font-serif); letter-spacing: -0.03em; }
+    .hero h2 em { display: block; font-style: italic; color: var(--cream-70); }
+    .hero p { margin-top: 18px; max-width: 30ch; font: 400 14px/1.6 var(--font-sans); color: var(--cream-70); }
+    .hero-btn {
+      margin-top: 24px; display: inline-flex; align-items: center; gap: 12px; cursor: pointer;
+      padding: 8px 8px 8px 22px; border: 1px solid var(--cream-40); border-radius: 40px; background: var(--cream-10); color: var(--cream);
+      font: 600 11px/1 var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase;
+      transition: background 0.45s var(--soft), color 0.45s var(--soft), gap 0.6s var(--flow);
+    }
+    .hero-btn span { width: 34px; height: 34px; border-radius: 50%; background: var(--cream); color: var(--wine); display: flex; align-items: center; justify-content: center; transition: transform 0.7s var(--flow); }
+    .hero-btn:hover { background: var(--cream); color: var(--wine); gap: 18px; }
+    .hero-btn:hover span { background: var(--wine); color: var(--cream); transform: rotate(-45deg); }
+
+    .hero-fig { will-change: transform; position: relative; z-index: 1; margin: 0; cursor: zoom-in; animation: floaty 10s ease-in-out infinite; }
+    @keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+    .hero-fig img {
+      display: block; width: 100%; height: auto;
+      filter: drop-shadow(0 40px 38px rgba(50,0,12,0.55)) drop-shadow(0 6px 10px rgba(50,0,12,0.35));
+      transform: perspective(1400px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+      transition: transform 0.9s var(--soft), opacity 1.2s var(--soft);
       opacity: 0;
-      transition: opacity 0.35s ease, transform 0.3s ease;
-      position: relative;
-      z-index: 1;
     }
-    .floor-wrap img.loaded { opacity: 1; }
-    .floor-wrap img:hover { transform: scale(1.015); }
-    .floor-lbl {
-      position: absolute;
-      bottom: 14px; left: 14px;
-      padding: 4px 12px;
-      background: rgba(31,58,27,0.86);
-      color: #FFFFFF;
-      font-size: 9.5px;
-      font-weight: 500;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      border-radius: 40px;
-    }
+    .hero-fig.ready img { opacity: 1; }
+    .hero-skeleton { position: absolute; inset: 14% 6%; border-radius: 40%; background: var(--cream-10); animation: breathe 2s ease-in-out infinite; }
+    .hero-fig.ready .hero-skeleton { display: none; }
+    @keyframes breathe { 50% { transform: scale(1.04); opacity: 0.5; } }
 
-    /* Footer */
-    .cob-footer {
-      padding: 11px 22px;
-      border-top: 1px solid rgba(0,0,0,0.10);
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 12px;
-      flex-wrap: wrap;
-      flex-shrink: 0;
-    }
-    .cob-hint {
-      font-size: 10px;
-      letter-spacing: 0.05em;
-      color: rgba(31,58,27,0.62);
-      text-transform: uppercase;
-    }
+    /* ── VAZIO / RODAPÉ ────────────────────────────────────────── */
+    #g-disclaimer { text-align: center; font: 500 10.5px/1 var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream-40); padding: 40px 16px 34px; }
 
-    /* ── EMPTY STATE ── */
-    #g-empty {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 80px 24px;
-      gap: 10px;
-    }
-    #g-empty.show { display: flex; }
-    #g-empty p { font-family: var(--font-serif); font-size: 21px; font-weight: 300; opacity: 0.4; }
-    #g-empty small { font-size: 11px; letter-spacing: 0.06em; opacity: 0.25; }
-
-    /* disclaimer */
-    #g-disclaimer {
-      text-align: center;
-      font-family: var(--font-sans);
-      font-size: 10px;
-      letter-spacing: 0.05em;
-      opacity: 0.4;
-      padding: 8px 16px 14px;
-    }
-
-    /* ── LIGHTBOX ── */
+    /* ── LIGHTBOX ──────────────────────────────────────────────── */
     #lightbox {
-      position: fixed;
-      inset: 0;
-      z-index: 9000;
-      display: flex;
-      flex-direction: column;
-      background: rgba(20,35,15,0.985);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
+      position: fixed; inset: 0; z-index: 9000; display: flex; flex-direction: column;
+      background: radial-gradient(120% 100% at 50% 40%, rgba(138,18,43,0.94), rgba(74,10,23,0.97));
+      -webkit-backdrop-filter: blur(26px); backdrop-filter: blur(26px);
+      opacity: 0; pointer-events: none; transition: opacity 0.55s var(--soft);
     }
     #lightbox.open { opacity: 1; pointer-events: auto; }
-    #lightbox > * { transform: translateY(8px) scale(0.99); transition: transform 0.35s var(--ease); }
-    #lightbox.open > * { transform: translateY(0) scale(1); }
-
-    #lb-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      padding: 20px 32px;
-      flex-shrink: 0;
+    #lb-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 22px 34px; flex-shrink: 0; }
+    #lb-title { font: 300 clamp(24px, 2.6vw, 36px)/1.05 var(--font-serif); letter-spacing: -0.015em; }
+    #lb-sub { margin-top: 8px; font: 500 10.5px/1.3 var(--font-sans); letter-spacing: 0.13em; text-transform: uppercase; color: var(--cream-70); }
+    #lb-counter { margin: 8px 0 0 auto; font: 500 11px/1 var(--font-sans); letter-spacing: 0.12em; color: var(--cream-70); }
+    #lb-close, .lb-nav, .lb-zoom-btn {
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;
+      border: 1px solid var(--cream-40); background: var(--cream-06); color: var(--cream); border-radius: 50%;
+      transition: background 0.4s var(--soft), color 0.4s var(--soft), transform 0.6s var(--flow), opacity 0.3s;
     }
-    #lb-title {
-      font-family: var(--font-sans);
-      font-size: 13px;
-      font-weight: 600;
-      color: #FFFFFF;
-      letter-spacing: 0.02em;
-    }
-    #lb-sub {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.07em;   /* idem .card-sub: preserva o "m²" minúsculo */
-      color: rgba(255,255,255,0.45);
-      margin-top: 4px;
-    }
-    #lb-counter {
-      font-size: 11px;
-      color: rgba(255,255,255,0.35);
-      letter-spacing: 0.06em;
-      padding-top: 4px;
-    }
-    #lb-close {
-      width: 38px; height: 38px;
-      border: 1px solid rgba(255,255,255,0.25);
-      background: transparent;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 50%;
-      color: #FFFFFF;
-      transition: background 0.22s, border-color 0.22s;
-      flex-shrink: 0;
-    }
-    #lb-close:hover { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-
-    #lb-body {
-      flex: 1;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      padding: 12px 80px;
-    }
-
+    #lb-close { width: 44px; height: 44px; }
+    #lb-close:hover { transform: rotate(90deg); }
+    #lb-close:hover, .lb-nav:hover:not(:disabled), .lb-zoom-btn:hover:not(:disabled) { background: var(--cream); color: var(--wine); }
+    #lb-body { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 20px 96px 44px; }
     #lb-img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      display: block;
+      display: block; max-width: none; object-fit: contain; flex-shrink: 0; cursor: zoom-in;
+      transform-origin: center center; will-change: transform;
+      border-radius: 18px; box-shadow: 0 18px 40px -14px rgba(20,0,6,0.7);
     }
-
-    /* Nav arrows */
-    .lb-nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 46px; height: 46px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: transparent;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 50%;
-      color: #FFFFFF;
-      transition: background 0.22s, border-color 0.22s;
-    }
-    .lb-nav:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-    .lb-nav:disabled { opacity: 0.18; cursor: default; }
-    #lb-prev { left: 20px; }
-    #lb-next { right: 20px; }
-
-    #lb-foot {
-      padding: 12px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-      gap: 12px;
-    }
-    #lb-notice {
-      font-size: 10.5px;
-      color: rgba(255,255,255,0.35);
-      letter-spacing: 0.06em;
-      padding: 6px 18px;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 40px;
-    }
+    #lb-img.on-paper { background: var(--cream); padding: clamp(10px, 1.8vw, 26px); }
+    #lb-img.bare { box-shadow: none; border-radius: 0; }
+    #lb-img.zoomed { cursor: grab; }
+    #lb-img.dragging { cursor: grabbing; }
+    .lb-nav { position: absolute; top: 50%; margin-top: -24px; width: 48px; height: 48px; z-index: 2; }
+    .lb-nav:disabled { opacity: 0.2; cursor: default; }
+    #lb-prev { left: 24px; } #lb-next { right: 24px; }
+    #lb-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 34px 20px; flex-shrink: 0; }
+    #lb-zoom-bar { display: flex; align-items: center; gap: 8px; }
+    .lb-zoom-btn { width: 36px; height: 36px; font: 400 19px/1 var(--font-sans); user-select: none; }
+    .lb-zoom-btn:disabled { opacity: 0.2; cursor: default; }
+    #lb-zoom-level { min-width: 44px; text-align: center; font: 500 11px/1 var(--font-sans); letter-spacing: 0.08em; color: var(--cream-70); }
+    #lb-notice { font: 500 10.5px/1 var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream-40); padding: 8px 16px; border: 1px solid var(--cream-20); border-radius: 40px; }
     #lb-notice:empty { display: none; }
 
-    /* ── ZOOM CONTROLS ── */
-    #lb-zoom-bar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    /* ── TABLET / TOUCH ────────────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .hero { grid-template-columns: 1fr; text-align: left; min-height: 0; }
+      .hero p { max-width: 46ch; }
+      #g-top { gap: 12px; }
+      .chip { padding: 10px 16px; }
     }
-    .lb-zoom-btn {
-      width: 32px; height: 32px;
-      border: 1px solid rgba(255,255,255,0.22);
-      background: transparent;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 50%;
-      color: #FFFFFF;
-      font-size: 18px;
-      line-height: 1;
-      transition: background 0.2s, border-color 0.2s;
-      flex-shrink: 0;
-      user-select: none;
-    }
-    .lb-zoom-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-    .lb-zoom-btn:disabled { opacity: 0.2; cursor: default; }
-    #lb-zoom-level {
-      font-size: 10.5px;
-      color: rgba(255,255,255,0.45);
-      letter-spacing: 0.06em;
-      min-width: 36px;
-      text-align: center;
-    }
-
-    /* image zoom/pan state */
-    #lb-img {
-      cursor: zoom-in;
-      transform-origin: center center;
-      will-change: transform;
-      transition: opacity 0.18s ease;
-    }
-    #lb-img.zoomed { cursor: grab; }
-    #lb-img.dragging { cursor: grabbing; transition: none; }
-
-    /* ── TRANSIÇÃO DE NAVEGAÇÃO (setas prev/next) ── */
-    @keyframes lbOutLeft  { to   { opacity: 0; transform: translateX(-42px); } }
-    @keyframes lbOutRight { to   { opacity: 0; transform: translateX(42px);  } }
-    @keyframes lbInRight  { from { opacity: 0; transform: translateX(48px);  } to { opacity: 1; transform: translateX(0); } }
-    @keyframes lbInLeft   { from { opacity: 0; transform: translateX(-48px); } to { opacity: 1; transform: translateX(0); } }
-    @keyframes lbFadeIn   { from { opacity: 0; }                                to { opacity: 1; } }
-    #lb-img.o-next { animation: lbOutLeft  0.16s var(--ease) forwards; }
-    #lb-img.o-prev { animation: lbOutRight 0.16s var(--ease) forwards; }
-    #lb-img.i-next { animation: lbInRight  0.40s var(--spring); }
-    #lb-img.i-prev { animation: lbInLeft   0.40s var(--spring); }
-    #lb-img.i-fade { animation: lbFadeIn   0.24s var(--ease);  }
-
-    /* ── TOUCH / SWIPE hint on lightbox nav ── */
     @media (hover: none) {
-      .card-zoom { opacity: 1; transform: scale(1); }
-      .g-card:hover img { transform: none; }
+      .tile .tile-zoom { opacity: 0; }
     }
 
-    /* ── TABLET (≤ 900px) ── */
-    @media (max-width: 900px) {
-      #filter-main { padding: 12px 20px; gap: 5px; }
-      #filter-sub-inner { padding: 6px 20px 10px; }
-      #lb-head { padding: 16px 20px; }
-      #lb-body { padding: 8px 60px; }
-      #lb-prev { left: 10px; }
-      #lb-next { right: 10px; }
+    /* ── MOBILE ────────────────────────────────────────────────── */
+    @media (max-width: 760px) {
+      #g-grid { width: 100%; }
+      :root { --gap: 10px; --k: 0.5; }
+      #g-top { flex-wrap: wrap; padding: 10px 12px 10px 18px; row-gap: 6px; border-radius: 12px; }
+      #g-logo { height: 32px; margin-right: auto; }
+      #btn-close { order: 2; width: 42px; height: 42px; }
+      #chips { order: 3; flex-basis: 100%; justify-content: flex-start; }
+      .chip { min-height: 40px; padding: 0 16px; }
+      .mosaic { grid-template-columns: repeat(2, 1fr); grid-auto-rows: auto; }
+      .mosaic > .tile { grid-column: auto / span var(--mc, 2); grid-row: auto; aspect-ratio: var(--mar, 1.4); height: auto; translate: none !important; }
+      .mosaic > .tile.paper { aspect-ratio: var(--mar, 1.2); }
+      .tile-cap { padding: 34px 16px 14px; } .tile-cap b { font-size: 12px; }
+      .block-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+      .hero { padding: 24px 18px 28px; }
+      .plan-body { height: 300px; } .plan-tab { padding: 10px 14px; }
+      #lb-head { padding: 14px 16px; }
+      #lb-body { padding: 8px 8px 24px; }
+      .lb-nav { width: 44px; height: 44px; margin-top: -22px; background: rgba(74,10,23,0.6); border-color: transparent; }
+      #lb-prev { left: 8px; } #lb-next { right: 8px; }
+      #lb-foot { padding: 10px 14px 16px; }
+      #lb-notice { font-size: 9.5px; padding: 7px 12px; }
+      .lb-zoom-btn { width: 42px; height: 42px; }
     }
 
-    /* ── MOBILE (≤ 600px) ── */
-    @media (max-width: 600px) {
-      #g-header { padding: 8px 14px; }
-      #g-logo { height: 56px; }
-
-      #filter-main { padding: 10px 12px; gap: 6px; }
-      #filter-sub-inner { padding: 6px 12px 10px; }
-      .f-btn { padding: 6px 14px; font-size: 10.5px; }
-      .sf-btn { padding: 4px 12px; }
-
-      /* grid */
-      #g-grid { gap: 2px; padding: 2px; }
-
-      /* card text */
-      .card-title { font-size: 11.5px; }
-
-      /* cob-card header stacks vertically */
-      .cob-header { flex-direction: column; align-items: flex-start; padding: 14px 16px 10px; gap: 10px; }
-      .cob-name { font-size: 16px; }
-      .cob-body { min-height: 200px; }
-      .cob-footer { padding: 9px 16px; }
-
-      /* lightbox */
-      #lb-head { padding: 12px 14px; flex-wrap: wrap; gap: 8px; }
-      #lb-title { font-size: 14px; }
-      #lb-body { padding: 0; }
-
-      /* arrows float over image on mobile */
-      #lb-prev, #lb-next {
-        width: 38px; height: 38px;
-        background: rgba(20,35,15,0.62);
-        border-color: transparent;
-      }
-      #lb-prev { left: 8px; }
-      #lb-next { right: 8px; }
-      #lb-foot { padding: 8px 14px; }
-      #lb-notice { font-size: 9.5px; padding: 4px 14px; }
-    }
-
-    /* ── VERY SMALL (≤ 360px) ── */
-    @media (max-width: 360px) {
-      .f-btn { padding: 5px 10px; font-size: 10px; }
-      .floor-tab { padding: 4px 10px; font-size: 10px; }
-    }
-
-    /* ── TOQUE (≤ 900px): alvos confortáveis e rótulos legíveis ──
-       Só cresce a área clicável (min-height + flex), sem mexer no visual
-       de desktop nem no tamanho das fontes principais. */
-    @media (max-width: 900px) {
-      #btn-close { width: 44px; height: 44px; }
-
-      .f-btn, .sf-btn, .floor-tab {
-        display: inline-flex; align-items: center; justify-content: center;
-      }
-      .f-btn     { min-height: 40px; }
-      .sf-btn    { min-height: 40px; }
-      .floor-tab { min-height: 40px; }
-
-      /* linhas de filtro acompanham os botões mais altos */
-      #filter-main     { padding-top: 8px; padding-bottom: 8px; }
-      #filter-sub-inner { padding-top: 4px; padding-bottom: 8px; }
-
-      /* controles do lightbox — por ID, senão a regra de ≤600px vence
-         por especificidade e as setas voltam para 38px */
-      #lb-close { width: 44px; height: 44px; }
-      #lb-prev, #lb-next { width: 44px; height: 44px; }
-      .lb-zoom-btn { width: 42px; height: 42px; font-size: 17px; }
-
-      /* rótulos secundários: nada abaixo de 10px na tela pequena */
-      .card-sub   { font-size: 10px; }
-      .cob-badge  { font-size: 10px; padding: 4px 11px; }
-      #lb-notice  { font-size: 10px; }
-
-      /* O selo do piso repete a aba ativa logo acima e, em cards baixos,
-         acaba colidindo com o desenho. Some no toque; a aba já informa. */
-      .floor-lbl { display: none; }
-    }
-
-    /* ── ACESSIBILIDADE / DESEMPENHO: respeitar redução de movimento ── */
+    /* ── MOVIMENTO REDUZIDO ────────────────────────────────────── */
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.001ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.001ms !important;
-        scroll-behavior: auto !important;
-      }
-      .g-card { animation: none; filter: none; }
-      .g-card:hover { transform: none; }
-      .g-card:hover img { transform: none; }
-      .g-card::before, .floor-skeleton { animation: none; }
-      #lightbox > * { transform: none; }
-      #lb-img.o-next, #lb-img.o-prev, #lb-img.i-next, #lb-img.i-prev, #lb-img.i-fade { animation-duration: 0.001ms; }
+      *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+      .reveal { opacity: 1; transform: none; filter: none; }
+      .hero-fig { animation: none; }
+      #glow { display: none; }
     }
   </style>
 </head>
 <body>
 
-<div id="g-root">
+<div id="atmos" aria-hidden="true">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div id="glow"></div>
+</div>
 
-  <!-- Header -->
-  <header id="g-header">
-    <img id="g-logo" src="assets/brand/logo.svg" alt="Trend">
+<div id="g-root">
+  <header id="g-top">
+    <img id="g-logo" src="assets/brand/logo.svg" alt="Make it Horizon">
+    <nav id="chips" aria-label="Categorias"></nav>
     <button id="btn-close" title="Fechar galeria" aria-label="Fechar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16">
-        <path d="M18 6L6 18M6 6l12 12"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" width="16" height="16"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
   </header>
 
-  <!-- Filters -->
-  <div id="g-filters">
-    <div id="filter-main"></div>
-    <div id="filter-sub">
-      <div id="filter-sub-inner"></div>
-    </div>
-  </div>
-
-  <!-- Gallery -->
-  <div id="g-scroll">
+  <main id="g-scroll">
     <div id="g-grid"></div>
-    <div id="g-empty">
-      <p>Nenhuma imagem encontrada</p>
-      <small>Selecione outra categoria</small>
-    </div>
     <p id="g-disclaimer">Imagens meramente ilustrativas.</p>
-  </div>
-
+  </main>
 </div>
 
-<!-- Lightbox -->
-<div id="lightbox" role="dialog" aria-modal="true">
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Imagem ampliada">
   <div id="lb-head">
     <div>
       <div id="lb-title"></div>
@@ -847,707 +420,537 @@
     </div>
     <div id="lb-counter"></div>
     <button id="lb-close" aria-label="Fechar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15">
-        <path d="M18 6L6 18M6 6l12 12"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" width="15" height="15"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
   </div>
   <div id="lb-body">
     <button id="lb-prev" class="lb-nav" aria-label="Anterior">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
-        <path d="M15 18l-6-6 6-6"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
     <img id="lb-img" src="" alt="">
     <button id="lb-next" class="lb-nav" aria-label="Próximo">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
-        <path d="M9 18l6-6-6-6"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M9 18l6-6-6-6"/></svg>
     </button>
   </div>
   <div id="lb-foot">
     <div id="lb-zoom-bar">
-      <button class="lb-zoom-btn" id="lb-zoom-out" aria-label="Zoom out" title="Diminuir zoom">−</button>
+      <button class="lb-zoom-btn" id="lb-zoom-out" aria-label="Diminuir zoom" title="Diminuir zoom">−</button>
       <span id="lb-zoom-level">100%</span>
-      <button class="lb-zoom-btn" id="lb-zoom-in" aria-label="Zoom in" title="Aumentar zoom">+</button>
+      <button class="lb-zoom-btn" id="lb-zoom-in" aria-label="Aumentar zoom" title="Aumentar zoom">+</button>
     </div>
-    <div id="lb-notice">Imagens meramente ilustrativas.</div>
+    <div id="lb-notice"></div>
   </div>
 </div>
 
 <script>
 // ================================================================
 // CONFIGURAÇÃO DA GALERIA
-// Edite GALLERY_CONFIG.items abaixo para adicionar suas imagens.
-// Coloque os arquivos nas pastas dentro de assets/ e atualize
-// os campos src com os nomes exatos dos arquivos.
+// Cada item aponta para assets/<file>.webp (lightbox) e
+// assets/miniaturas/<file>.webp (grade). Para acrescentar uma imagem:
+// jogue o original em _originais/, registre em assets-map.tsv, rode
+// `python build_assets.py` e adicione a linha aqui.
+//
+//   w,h   dimensões do arquivo em assets/ (o lightbox calcula o enquadramento)
+//   c,r   largura (de 12 colunas) e altura (em linhas) do cartão no mosaico
+//   m     colunas que ocupa no celular (padrão: 2 se c ≥ 6, senão 1)
+//   start coluna em que o cartão começa (centraliza quando preciso)
+//   paper desenho sobre papel creme (plantas) · hero = destaque do entorno 3D
 // ================================================================
-const GALLERY_CONFIG = {
-  projectName: 'TREND',
-  projectSub:  'Região do Lago · Cascavel · PR',
-
-  categories: [
-    { id: 'fachada', label: 'Fachada' },
-    {
-      // Uma sub-categoria por ambiente.
-      id: 'areas-comuns', label: 'Áreas Comuns',
-      subs: [
-        { id: 'ac-salao-de-festas', label: 'Salão de Festas' },
-        { id: 'ac-espaco-gourmet', label: 'Espaço Gourmet' },
-        { id: 'ac-academia', label: 'Academia' },
-        { id: 'ac-alongamento', label: 'Alongamento' },
-        { id: 'ac-spa', label: 'Spa' },
-        { id: 'ac-sala-de-jogos', label: 'Sala de Jogos' },
-        { id: 'ac-game-zone', label: 'Game Zone' },
-        { id: 'ac-coworking', label: 'Coworking' },
-        { id: 'ac-mini-mercado', label: 'Mini Mercado' },
-        { id: 'ac-lavanderia', label: 'Lavanderia' },
-        { id: 'ac-brinquedoteca', label: 'Brinquedoteca' },
-        { id: 'ac-playground', label: 'Playground' },
-        { id: 'ac-espaco-pet', label: 'Espaço Pet' },
-      ]
-    },
-    {
-      id: 'plantas', label: 'Plantas',
-      subs: [
-        { id: 'pl-tipologias', label: 'Tipologias' },
-        { id: 'pl-lazer',      label: 'Área de Lazer' },
-      ]
-    },
-  ],
-
-  items: [
-
-    // ═══ FACHADA (torre + acessos) ════════════════════════════════
-    { id:1, type:'image', category:'fachada', title:'Fachada', subtitle:'Perspectiva da Esquina', src:'assets/fachada/torre-01.webp', thumb:'assets/miniaturas/fachada/torre-01.webp' },
-    { id:2, type:'image', category:'fachada', title:'Fachada', subtitle:'Vista Frontal da Torre', src:'assets/fachada/torre-02.webp', thumb:'assets/miniaturas/fachada/torre-02.webp' },
-    { id:3, type:'image', category:'fachada', title:'Fachada', subtitle:'Perspectiva da Torre', src:'assets/fachada/torre-03.webp', thumb:'assets/miniaturas/fachada/torre-03.webp' },
-    { id:4, type:'image', category:'fachada', title:'Acesso', subtitle:'Vista da Esquina', src:'assets/fachada/acesso-01.webp', thumb:'assets/miniaturas/fachada/acesso-01.webp' },
-    { id:5, type:'image', category:'fachada', title:'Acesso', subtitle:'Portaria e Fachada Frontal', src:'assets/fachada/acesso-02.webp', thumb:'assets/miniaturas/fachada/acesso-02.webp' },
-    { id:6, type:'image', category:'fachada', title:'Acesso', subtitle:'Entrada e Paisagismo', src:'assets/fachada/acesso-03.webp', thumb:'assets/miniaturas/fachada/acesso-03.webp' },
-
-    // ═══ ÁREAS COMUNS › SALÃO DE FESTAS ═══
-    { id:20, type:'image', category:'areas-comuns', subCategory:'ac-salao-de-festas', title:'Salão de Festas', subtitle:'Vista Geral', src:'assets/areas-comuns/salao-de-festas-01.webp', thumb:'assets/miniaturas/areas-comuns/salao-de-festas-01.webp' },
-    { id:21, type:'image', category:'areas-comuns', subCategory:'ac-salao-de-festas', title:'Salão de Festas', subtitle:'Bancada e Copa', src:'assets/areas-comuns/salao-de-festas-02.webp', thumb:'assets/miniaturas/areas-comuns/salao-de-festas-02.webp' },
-    { id:22, type:'image', category:'areas-comuns', subCategory:'ac-salao-de-festas', title:'Salão de Festas', subtitle:'Estar e Lounge', src:'assets/areas-comuns/salao-de-festas-03.webp', thumb:'assets/miniaturas/areas-comuns/salao-de-festas-03.webp' },
-    { id:23, type:'image', category:'areas-comuns', subCategory:'ac-salao-de-festas', title:'Salão de Festas', subtitle:'Mesas e Painel Curvo', src:'assets/areas-comuns/salao-de-festas-04.webp', thumb:'assets/miniaturas/areas-comuns/salao-de-festas-04.webp' },
-    { id:24, type:'image', category:'areas-comuns', subCategory:'ac-salao-de-festas', title:'Salão de Festas', subtitle:'Salão e Mesas', src:'assets/areas-comuns/salao-de-festas-05.webp', thumb:'assets/miniaturas/areas-comuns/salao-de-festas-05.webp' },
-
-    // ═══ ÁREAS COMUNS › ESPAÇO GOURMET ═══
-    { id:30, type:'image', category:'areas-comuns', subCategory:'ac-espaco-gourmet', title:'Espaço Gourmet', subtitle:'Cozinha e Mesas', src:'assets/areas-comuns/espaco-gourmet-01.webp', thumb:'assets/miniaturas/areas-comuns/espaco-gourmet-01.webp' },
-    { id:31, type:'image', category:'areas-comuns', subCategory:'ac-espaco-gourmet', title:'Espaço Gourmet', subtitle:'Estar e Jantar', src:'assets/areas-comuns/espaco-gourmet-02.webp', thumb:'assets/miniaturas/areas-comuns/espaco-gourmet-02.webp' },
-    { id:32, type:'image', category:'areas-comuns', subCategory:'ac-espaco-gourmet', title:'Espaço Gourmet', subtitle:'Ambiente de Jantar', src:'assets/areas-comuns/espaco-gourmet-03.webp', thumb:'assets/miniaturas/areas-comuns/espaco-gourmet-03.webp' },
-    { id:33, type:'image', category:'areas-comuns', subCategory:'ac-espaco-gourmet', title:'Espaço Gourmet', subtitle:'Bancada e Churrasqueira', src:'assets/areas-comuns/espaco-gourmet-04.webp', thumb:'assets/miniaturas/areas-comuns/espaco-gourmet-04.webp' },
-    { id:34, type:'image', category:'areas-comuns', subCategory:'ac-espaco-gourmet', title:'Espaço Gourmet', subtitle:'Vista Geral', src:'assets/areas-comuns/espaco-gourmet-05.webp', thumb:'assets/miniaturas/areas-comuns/espaco-gourmet-05.webp' },
-
-    // ═══ ÁREAS COMUNS › ACADEMIA ═══
-    { id:40, type:'image', category:'areas-comuns', subCategory:'ac-academia', title:'Academia', subtitle:'Vista Geral', src:'assets/areas-comuns/academia-01.webp', thumb:'assets/miniaturas/areas-comuns/academia-01.webp' },
-    { id:41, type:'image', category:'areas-comuns', subCategory:'ac-academia', title:'Academia', subtitle:'Arcos e Equipamentos', src:'assets/areas-comuns/academia-02.webp', thumb:'assets/miniaturas/areas-comuns/academia-02.webp' },
-    { id:42, type:'image', category:'areas-comuns', subCategory:'ac-academia', title:'Academia', subtitle:'Musculação e Cardio', src:'assets/areas-comuns/academia-03.webp', thumb:'assets/miniaturas/areas-comuns/academia-03.webp' },
-    { id:43, type:'image', category:'areas-comuns', subCategory:'ac-academia', title:'Academia', subtitle:'Esteiras e Vista', src:'assets/areas-comuns/academia-04.webp', thumb:'assets/miniaturas/areas-comuns/academia-04.webp' },
-
-    // ═══ ÁREAS COMUNS › ALONGAMENTO ═══
-    { id:50, type:'image', category:'areas-comuns', subCategory:'ac-alongamento', title:'Alongamento', subtitle:'Circuito Externo', src:'assets/areas-comuns/alongamento-01.webp', thumb:'assets/miniaturas/areas-comuns/alongamento-01.webp' },
-    { id:51, type:'image', category:'areas-comuns', subCategory:'ac-alongamento', title:'Alongamento', subtitle:'Painel Fitness', src:'assets/areas-comuns/alongamento-02.webp', thumb:'assets/miniaturas/areas-comuns/alongamento-02.webp' },
-    { id:52, type:'image', category:'areas-comuns', subCategory:'ac-alongamento', title:'Alongamento', subtitle:'Barras de Ginástica', src:'assets/areas-comuns/alongamento-03.webp', thumb:'assets/miniaturas/areas-comuns/alongamento-03.webp' },
-
-    // ═══ ÁREAS COMUNS › SPA ═══
-    { id:60, type:'image', category:'areas-comuns', subCategory:'ac-spa', title:'Spa', subtitle:'Estar e Relaxamento', src:'assets/areas-comuns/spa-01.webp', thumb:'assets/miniaturas/areas-comuns/spa-01.webp' },
-    { id:61, type:'image', category:'areas-comuns', subCategory:'ac-spa', title:'Spa', subtitle:'Espreguiçadeiras', src:'assets/areas-comuns/spa-02.webp', thumb:'assets/miniaturas/areas-comuns/spa-02.webp' },
-    { id:62, type:'image', category:'areas-comuns', subCategory:'ac-spa', title:'Spa', subtitle:'Banheiras e Deck', src:'assets/areas-comuns/spa-03.webp', thumb:'assets/miniaturas/areas-comuns/spa-03.webp' },
-    { id:63, type:'image', category:'areas-comuns', subCategory:'ac-spa', title:'Spa', subtitle:'Vista Geral', src:'assets/areas-comuns/spa-04.webp', thumb:'assets/miniaturas/areas-comuns/spa-04.webp' },
-
-    // ═══ ÁREAS COMUNS › SALA DE JOGOS ═══
-    { id:70, type:'image', category:'areas-comuns', subCategory:'ac-sala-de-jogos', title:'Sala de Jogos', subtitle:'Vista Geral', src:'assets/areas-comuns/sala-de-jogos-01.webp', thumb:'assets/miniaturas/areas-comuns/sala-de-jogos-01.webp' },
-    { id:71, type:'image', category:'areas-comuns', subCategory:'ac-sala-de-jogos', title:'Sala de Jogos', subtitle:'Sinuca e Estar', src:'assets/areas-comuns/sala-de-jogos-02.webp', thumb:'assets/miniaturas/areas-comuns/sala-de-jogos-02.webp' },
-    { id:72, type:'image', category:'areas-comuns', subCategory:'ac-sala-de-jogos', title:'Sala de Jogos', subtitle:'Mesa de Carteado', src:'assets/areas-comuns/sala-de-jogos-03.webp', thumb:'assets/miniaturas/areas-comuns/sala-de-jogos-03.webp' },
-    { id:73, type:'image', category:'areas-comuns', subCategory:'ac-sala-de-jogos', title:'Sala de Jogos', subtitle:'Sinuca e TV', src:'assets/areas-comuns/sala-de-jogos-04.webp', thumb:'assets/miniaturas/areas-comuns/sala-de-jogos-04.webp' },
-
-    // ═══ ÁREAS COMUNS › GAME ZONE ═══
-    { id:80, type:'image', category:'areas-comuns', subCategory:'ac-game-zone', title:'Game Zone', subtitle:'Estações de Jogo', src:'assets/areas-comuns/game-zone-01.webp', thumb:'assets/miniaturas/areas-comuns/game-zone-01.webp' },
-    { id:81, type:'image', category:'areas-comuns', subCategory:'ac-game-zone', title:'Game Zone', subtitle:'Bancada Gamer', src:'assets/areas-comuns/game-zone-02.webp', thumb:'assets/miniaturas/areas-comuns/game-zone-02.webp' },
-    { id:82, type:'image', category:'areas-comuns', subCategory:'ac-game-zone', title:'Game Zone', subtitle:'Estar e Simulador', src:'assets/areas-comuns/game-zone-03.webp', thumb:'assets/miniaturas/areas-comuns/game-zone-03.webp' },
-    { id:83, type:'image', category:'areas-comuns', subCategory:'ac-game-zone', title:'Game Zone', subtitle:'Vista Geral', src:'assets/areas-comuns/game-zone-04.webp', thumb:'assets/miniaturas/areas-comuns/game-zone-04.webp' },
-
-    // ═══ ÁREAS COMUNS › COWORKING ═══
-    { id:90, type:'image', category:'areas-comuns', subCategory:'ac-coworking', title:'Coworking', subtitle:'Estações e Sala de Reunião', src:'assets/areas-comuns/coworking-01.webp', thumb:'assets/miniaturas/areas-comuns/coworking-01.webp' },
-    { id:91, type:'image', category:'areas-comuns', subCategory:'ac-coworking', title:'Coworking', subtitle:'Sala de Reunião', src:'assets/areas-comuns/coworking-02.webp', thumb:'assets/miniaturas/areas-comuns/coworking-02.webp' },
-    { id:92, type:'image', category:'areas-comuns', subCategory:'ac-coworking', title:'Coworking', subtitle:'Mesa Compartilhada', src:'assets/areas-comuns/coworking-03.webp', thumb:'assets/miniaturas/areas-comuns/coworking-03.webp' },
-    { id:93, type:'image', category:'areas-comuns', subCategory:'ac-coworking', title:'Coworking', subtitle:'Sala de Podcast', src:'assets/areas-comuns/coworking-04.webp', thumb:'assets/miniaturas/areas-comuns/coworking-04.webp' },
-
-    // ═══ ÁREAS COMUNS › MINI MERCADO ═══
-    { id:100, type:'image', category:'areas-comuns', subCategory:'ac-mini-mercado', title:'Mini Mercado', subtitle:'Balcão e Prateleiras', src:'assets/areas-comuns/mini-mercado-01.webp', thumb:'assets/miniaturas/areas-comuns/mini-mercado-01.webp' },
-    { id:101, type:'image', category:'areas-comuns', subCategory:'ac-mini-mercado', title:'Mini Mercado', subtitle:'Geladeiras e Prateleiras', src:'assets/areas-comuns/mini-mercado-02.webp', thumb:'assets/miniaturas/areas-comuns/mini-mercado-02.webp' },
-    { id:102, type:'image', category:'areas-comuns', subCategory:'ac-mini-mercado', title:'Mini Mercado', subtitle:'Prateleiras e Caixa', src:'assets/areas-comuns/mini-mercado-03.webp', thumb:'assets/miniaturas/areas-comuns/mini-mercado-03.webp' },
-
-    // ═══ ÁREAS COMUNS › LAVANDERIA ═══
-    { id:110, type:'image', category:'areas-comuns', subCategory:'ac-lavanderia', title:'Lavanderia', subtitle:'Lavadoras e Bancada', src:'assets/areas-comuns/lavanderia-01.webp', thumb:'assets/miniaturas/areas-comuns/lavanderia-01.webp' },
-    { id:111, type:'image', category:'areas-comuns', subCategory:'ac-lavanderia', title:'Lavanderia', subtitle:'Varal e Bancada', src:'assets/areas-comuns/lavanderia-02.webp', thumb:'assets/miniaturas/areas-comuns/lavanderia-02.webp' },
-    { id:112, type:'image', category:'areas-comuns', subCategory:'ac-lavanderia', title:'Lavanderia', subtitle:'Bancada e Nichos', src:'assets/areas-comuns/lavanderia-03.webp', thumb:'assets/miniaturas/areas-comuns/lavanderia-03.webp' },
-
-    // ═══ ÁREAS COMUNS › BRINQUEDOTECA ═══
-    { id:120, type:'image', category:'areas-comuns', subCategory:'ac-brinquedoteca', title:'Brinquedoteca', subtitle:'Vista Geral', src:'assets/areas-comuns/brinquedoteca-01.webp', thumb:'assets/miniaturas/areas-comuns/brinquedoteca-01.webp' },
-    { id:121, type:'image', category:'areas-comuns', subCategory:'ac-brinquedoteca', title:'Brinquedoteca', subtitle:'Escorregador e Mesas', src:'assets/areas-comuns/brinquedoteca-02.webp', thumb:'assets/miniaturas/areas-comuns/brinquedoteca-02.webp' },
-    { id:122, type:'image', category:'areas-comuns', subCategory:'ac-brinquedoteca', title:'Brinquedoteca', subtitle:'Piscina de Bolinhas', src:'assets/areas-comuns/brinquedoteca-03.webp', thumb:'assets/miniaturas/areas-comuns/brinquedoteca-03.webp' },
-    { id:123, type:'image', category:'areas-comuns', subCategory:'ac-brinquedoteca', title:'Brinquedoteca', subtitle:'Área de Brincar', src:'assets/areas-comuns/brinquedoteca-04.webp', thumb:'assets/miniaturas/areas-comuns/brinquedoteca-04.webp' },
-    { id:124, type:'image', category:'areas-comuns', subCategory:'ac-brinquedoteca', title:'Brinquedoteca', subtitle:'Painel Colorido', src:'assets/areas-comuns/brinquedoteca-05.webp', thumb:'assets/miniaturas/areas-comuns/brinquedoteca-05.webp' },
-    { id:125, type:'image', category:'areas-comuns', subCategory:'ac-brinquedoteca', title:'Brinquedoteca', subtitle:'Estar e Amarelinha', src:'assets/areas-comuns/brinquedoteca-06.webp', thumb:'assets/miniaturas/areas-comuns/brinquedoteca-06.webp' },
-
-    // ═══ ÁREAS COMUNS › PLAYGROUND ═══
-    { id:130, type:'image', category:'areas-comuns', subCategory:'ac-playground', title:'Playground', subtitle:'Brinquedos e Escorregador', src:'assets/areas-comuns/playground-01.webp', thumb:'assets/miniaturas/areas-comuns/playground-01.webp' },
-    { id:131, type:'image', category:'areas-comuns', subCategory:'ac-playground', title:'Playground', subtitle:'Torre e Escalada', src:'assets/areas-comuns/playground-02.webp', thumb:'assets/miniaturas/areas-comuns/playground-02.webp' },
-    { id:132, type:'image', category:'areas-comuns', subCategory:'ac-playground', title:'Playground', subtitle:'Vista Geral', src:'assets/areas-comuns/playground-03.webp', thumb:'assets/miniaturas/areas-comuns/playground-03.webp' },
-
-    // ═══ ÁREAS COMUNS › ESPAÇO PET ═══
-    { id:140, type:'image', category:'areas-comuns', subCategory:'ac-espaco-pet', title:'Espaço Pet', subtitle:'Pet Place', src:'assets/areas-comuns/espaco-pet-01.webp', thumb:'assets/miniaturas/areas-comuns/espaco-pet-01.webp' },
-    { id:141, type:'image', category:'areas-comuns', subCategory:'ac-espaco-pet', title:'Espaço Pet', subtitle:'Gramado e Obstáculos', src:'assets/areas-comuns/espaco-pet-02.webp', thumb:'assets/miniaturas/areas-comuns/espaco-pet-02.webp' },
-    { id:142, type:'image', category:'areas-comuns', subCategory:'ac-espaco-pet', title:'Espaço Pet', subtitle:'Circuito e Lavagem', src:'assets/areas-comuns/espaco-pet-03.webp', thumb:'assets/miniaturas/areas-comuns/espaco-pet-03.webp' },
-
-    // ═══ PLANTAS › TIPOLOGIAS ═════════════════════════════════════
-    { id:200, type:'cobertura-plan', category:'plantas', subCategory:'pl-tipologias',
-      title:'Tipologias', subtitle:'Plantas humanizadas',
-      badge:'Planta',
-      hint:'2 plantas — alterne nas abas · toque para ampliar',
-      notice:'Plantas humanizadas — imagens meramente ilustrativas.',
-      floors:[
-        { label:'2 Quartos', note:'Suíte e dormitório',      src:'assets/plantas/2-quartos.webp', thumb:'assets/miniaturas/plantas/2-quartos.webp' },
-        { label:'3 Quartos', note:'Suíte e 2 dormitórios',   src:'assets/plantas/3-quartos.webp', thumb:'assets/miniaturas/plantas/3-quartos.webp' },
-    ]},
-
-    // ═══ PLANTAS › ÁREA DE LAZER ══════════════════════════════════
-    { id:220, type:'cobertura-plan', category:'plantas', subCategory:'pl-lazer',
-      title:'Área de Lazer', subtitle:'Planta humanizada',
-      badge:'Planta',
-      hint:'Toque para ampliar',
-      notice:'Planta humanizada — imagem meramente ilustrativa.',
-      floors:[
-        { label:'Área de Lazer', note:'Salão de festas, espaço gourmet, academia, spa, coworking, brinquedoteca e espaço pet', src:'assets/plantas/area-de-lazer.webp', thumb:'assets/miniaturas/plantas/area-de-lazer.webp' },
-    ]},
-  ],
+const CATS = {
+  'fachada':      { label: 'Fachada' },
+  'areas-comuns': { label: 'Áreas Comuns' },
+  'apartamento':  { label: 'Apartamento' },
+  'entorno':      { label: 'Entorno 3D', hero: true },
+  'implantacao':  { label: 'Implantação' },
+  'plantas':      { label: 'Plantas', toggle: true },
 };
+const MODES = {
+  imagens: ['fachada', 'areas-comuns', 'apartamento'],
+  plantas: ['entorno', 'implantacao', 'plantas'],
+  all:     ['fachada', 'areas-comuns', 'apartamento', 'entorno', 'implantacao', 'plantas'],
+};
+const NOTICE = 'Imagens meramente ilustrativas.';
+
+const ITEMS = [
+  // ═══ FACHADA ═══
+  { id: 1,  cat: 'fachada', file: 'fachada/amanhecer',      w: 1620, h: 1080, c: 7, r: 5, title: 'Fachada',      sub: 'Amanhecer' },
+  { id: 2,  cat: 'fachada', file: 'fachada/acesso-garagem', w: 1080, h: 1080, c: 5, r: 5, title: 'Acesso',       sub: 'Torre e garagem' },
+  { id: 3,  cat: 'fachada', file: 'fachada/entardecer',     w: 1620, h: 1080, c: 5, r: 4, title: 'Fachada',      sub: 'Entardecer' },
+  { id: 4,  cat: 'fachada', file: 'fachada/vista-aerea',    w: 1920, h: 1080, c: 7, r: 4, title: 'Vista Aérea',  sub: 'Implantação no entorno' },
+
+  // ═══ ÁREAS COMUNS ═══
+  { id: 10, cat: 'areas-comuns', file: 'areas-comuns/academia',        w: 1839, h: 1080, c: 7, r: 4, title: 'Academia',        sub: 'Equipamentos e espaldar' },
+  { id: 11, cat: 'areas-comuns', file: 'areas-comuns/kids',            w: 1296, h: 1080, c: 5, r: 4, title: 'Espaço Kids',     sub: 'Playground e brinquedos' },
+  { id: 12, cat: 'areas-comuns', file: 'areas-comuns/fogueira',        w: 1440, h: 1080, c: 5, r: 5, title: 'Fogueira',        sub: 'Lounge ao ar livre' },
+  { id: 13, cat: 'areas-comuns', file: 'areas-comuns/salao-de-festas', w: 1440, h: 1080, c: 7, r: 5, title: 'Salão de Festas', sub: 'Mesas e bancada' },
+  { id: 14, cat: 'areas-comuns', file: 'areas-comuns/picnic',          w: 1440, h: 1080, c: 7, r: 4, title: 'Picnic',          sub: 'Mesa de piquenique' },
+  { id: 15, cat: 'areas-comuns', file: 'areas-comuns/redario',         w: 1440, h: 1080, c: 5, r: 4, m: 2, title: 'Rêdario',  sub: 'Redes e jardim' },
+
+  // ═══ APARTAMENTO ═══
+  { id: 20, cat: 'apartamento', file: 'apartamento/sala',            w: 1440, h: 1080, c: 7, r: 5, title: 'Sala',            sub: 'Estar e jantar' },
+  { id: 21, cat: 'apartamento', file: 'apartamento/jardim-privativo', w: 1080, h: 1080, c: 5, r: 5, title: 'Jardim Privativo', sub: 'Área externa' },
+  { id: 22, cat: 'apartamento', file: 'apartamento/cozinha',         w: 1440, h: 1080, c: 4, r: 4, title: 'Cozinha',         sub: 'Cozinha e jantar integrados' },
+  { id: 23, cat: 'apartamento', file: 'apartamento/quarto-casal',    w: 1440, h: 1080, c: 4, r: 4, title: 'Quarto de Casal', sub: 'Dormitório' },
+  { id: 24, cat: 'apartamento', file: 'apartamento/quarto-infantil', w: 1440, h: 1080, c: 4, r: 4, m: 1, title: 'Quarto Infantil', sub: 'Dormitório' },
+  { id: 25, cat: 'apartamento', file: 'apartamento/lavanderia',      w: 1440, h: 1080, c: 7, r: 5, title: 'Lavanderia',      sub: 'Na varanda' },
+  { id: 26, cat: 'apartamento', file: 'apartamento/varanda-gourmet', w: 1176, h: 1080, c: 5, r: 5, title: 'Varanda Gourmet', sub: 'Com churrasqueira' },
+
+  // ═══ ENTORNO 3D — destaque ═══
+  { id: 30, cat: 'entorno', file: 'plantas/entorno-3d', w: 4224, h: 2586, hero: true,
+    title: 'Entorno 3D', sub: 'Implantação em perspectiva',
+    text: 'O empreendimento e o seu entorno em perspectiva 3D.' },
+
+  // ═══ IMPLANTAÇÃO ═══
+  { id: 40, cat: 'implantacao', file: 'plantas/implantacao', w: 4000, h: 3409, c: 8, r: 8, start: 3, paper: true,
+    title: 'Implantação', sub: '' },
+
+  // ═══ PLANTAS ═══
+  { id: 50, cat: 'plantas', file: 'plantas/planta-meio',  w: 3726, h: 2282, c: 7, r: 5, paper: true, tag: 'Planta',
+    title: 'Planta Meio',  sub: 'Apartamento de meio' },
+  { id: 51, cat: 'plantas', file: 'plantas/planta-ponta', w: 2792, h: 2223, c: 5, r: 5, paper: true, tag: 'Planta',
+    title: 'Planta Ponta', sub: 'Apartamento de ponta' },
+];
+ITEMS.forEach(i => { i.src = `assets/${i.file}.webp`; i.thumb = `assets/miniaturas/${i.file}.webp`; });
 
 // ================================================================
 // ENGINE
 // ================================================================
-const st = {
-  cat:    'all',
-  sub:    null,
-  lbItems: [],
-  lbIdx:   -1,
-};
-
 const $ = id => document.getElementById(id);
+const el = {
+  chips: $('chips'), scroll: $('g-scroll'), grid: $('g-grid'),
+  lb: $('lightbox'), lbBody: $('lb-body'), lbImg: $('lb-img'),
+  lbTitle: $('lb-title'), lbSub: $('lb-sub'), lbCounter: $('lb-counter'), lbNotice: $('lb-notice'),
+  lbPrev: $('lb-prev'), lbNext: $('lb-next'),
+};
+const st = { cat: 'all', lb: [], idx: -1, from: null };
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const elFilterMain    = $('filter-main');
-const elFilterSub     = $('filter-sub');
-const elFilterSubIn   = $('filter-sub-inner');
-const elGrid          = $('g-grid');
-const elEmpty         = $('g-empty');
-const elLightbox      = $('lightbox');
-const elLbImg         = $('lb-img');
-const elLbTitle       = $('lb-title');
-const elLbSub         = $('lb-sub');
-const elLbCounter     = $('lb-counter');
-const elLbNotice      = $('lb-notice');
-const elLbPrev        = $('lb-prev');
-const elLbNext        = $('lb-next');
-
-// ── modo: 'imagens' | 'plantas' | 'all' ──────────────────────────
 const MODE = (() => {
   try {
-    const m = new URLSearchParams(window.location.search).get('mode') || 'all';
-    return ['all','imagens','plantas'].includes(m) ? m : 'all';
-  } catch(_) { return 'all'; }
+    const m = new URLSearchParams(location.search).get('mode') || 'all';
+    return MODES[m] ? m : 'all';
+  } catch (_) { return 'all'; }
 })();
+const catsInMode = () => MODES[MODE];
 
-// Categorias exibidas no filtro principal conforme modo
-const DISPLAY_CATS = (() => {
-  // No modo plantas as sub-categorias de 'plantas' viram o filtro principal.
-  if (MODE === 'plantas') return getCat('plantas').subs.map(s => ({ id: s.id, label: s.label }));
-  if (MODE === 'imagens') return GALLERY_CONFIG.categories.filter(c => c.id !== 'plantas');
-  return GALLERY_CONFIG.categories;
-})();
+const SVG_ZOOM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" width="16" height="16"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.4-4.4M11 8v6M8 11h6"/></svg>';
+const SVG_WAVE = '<span class="rule"></span>';
 
-// ── helpers ──────────────────────────────────────────────────────
-function getCat(id) { return GALLERY_CONFIG.categories.find(c => c.id === id); }
-function getSubLabel(catId, subId) {
-  const cat = getCat(catId);
-  if (!cat || !cat.subs) return '';
-  const s = cat.subs.find(s => s.id === subId);
-  return s ? s.label : '';
-}
-
-// ── filters ──────────────────────────────────────────────────────
-function renderMainFilters() {
-  elFilterMain.innerHTML = '';
-  DISPLAY_CATS.forEach(cat => {
+// ── chips (filtros) ──────────────────────────────────────────────
+function renderChips() {
+  el.chips.innerHTML = '<span class="chip-ink"></span>';
+  const list = [{ id: 'all', label: 'Todas' }, ...catsInMode().map(id => ({ id, label: CATS[id].label }))];
+  list.forEach(c => {
     const b = document.createElement('button');
-    b.className = 'f-btn' + (cat.id === st.cat ? ' active' : '');
-    b.textContent = cat.label;
+    b.className = 'chip' + (c.id === st.cat ? ' active' : '');
+    b.textContent = c.label;
     b.addEventListener('click', () => {
-      if (cat.id === st.cat) return;
-      st.cat = cat.id;
-      // Se a categoria tem sub-filtros, pré-seleciona o primeiro
-      st.sub = (cat.subs && cat.subs.length) ? cat.subs[0].id : null;
-      renderMainFilters(); renderSubFilters(); renderGallery();
+      if (c.id === st.cat) return;
+      st.cat = c.id;
+      el.chips.querySelectorAll('.chip').forEach(x => x.classList.toggle('active', x === b));
+      moveInk(true);
+      swapGallery();
     });
-    elFilterMain.appendChild(b);
+    el.chips.appendChild(b);
   });
+  moveInk(false);
+}
+function moveInk(scrollTo) {
+  const a = el.chips.querySelector('.chip.active'), ink = el.chips.querySelector('.chip-ink');
+  if (!a || !ink) return;
+  ink.style.width = a.offsetWidth + 'px';
+  ink.style.height = a.offsetHeight + 'px';
+  ink.style.transform = `translate(${a.offsetLeft}px, ${a.offsetTop}px)`;
+  if (scrollTo && el.chips.scrollWidth > el.chips.clientWidth) a.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
 }
 
-function renderSubFilters() {
-  // No modo plantas o filtro principal já é a tipologia — sem sub-filtro
-  if (MODE === 'plantas') { elFilterSub.classList.remove('open'); return; }
-  const cat = getCat(st.cat);
-  if (cat && cat.subs && cat.subs.length) {
-    elFilterSubIn.innerHTML = '';
-    const addSub = (id, label) => {
-      const b = document.createElement('button');
-      b.className = 'sf-btn' + (st.sub === id ? ' active' : '');
-      b.textContent = label;
-      b.addEventListener('click', () => {
-        if (st.sub === id) return;
-        st.sub = id;
-        renderSubFilters(); renderGallery();
-      });
-      elFilterSubIn.appendChild(b);
-    };
-    cat.subs.forEach(s => addSub(s.id, s.label));
-    elFilterSub.classList.add('open');
-  } else {
-    elFilterSub.classList.remove('open');
-  }
-}
-
-// ── gallery ──────────────────────────────────────────────────────
-function filteredItems() {
-  return GALLERY_CONFIG.items.filter(item => {
-    // Filtro de modo
-    if (MODE === 'plantas' && item.category !== 'plantas') return false;
-    if (MODE === 'imagens' && item.category === 'plantas') return false;
-
-    // Filtro de categoria
-    if (MODE === 'plantas') {
-      if (item.subCategory !== st.cat) return false;
-    } else {
-      if (st.cat && item.category !== st.cat) return false;
-      if (st.sub && item.subCategory !== st.sub) return false;
-    }
-    return true;
-  });
+// ── galeria ──────────────────────────────────────────────────────
+function swapGallery() {
+  el.scroll.scrollTo({ top: 0 });
+  if (!el.grid.children.length || REDUCED) { renderGallery(); return; }
+  el.grid.classList.add('leaving');
+  setTimeout(() => { renderGallery(); el.grid.classList.remove('leaving'); }, 300);
 }
 
 function renderGallery() {
-  const items = filteredItems();
-  const existing = elGrid.querySelectorAll('.g-card');
-
-  const doRender = () => {
-    elGrid.innerHTML = '';
-    elGrid.classList.toggle('plantas-mode', MODE === 'plantas');
-    elEmpty.classList.remove('show');
-    st.lbItems = items.filter(i => i.type === 'image');
-    if (!items.length) { elEmpty.classList.add('show'); return; }
-    items.forEach((item, i) => {
-      const card = item.type === 'cobertura-plan'
-        ? buildCobCard(item)
-        : buildImgCard(item);
-      card.style.animationDelay = Math.min(i * 0.04, 0.5) + 's';
-      elGrid.appendChild(card);
-    });
-  };
-
-  if (existing.length) {
-    existing.forEach(c => { c.style.animation = 'cardOut 0.18s ease forwards'; });
-    setTimeout(doRender, 165);
-  } else {
-    doRender();
-  }
+  if (io) io.disconnect();
+  el.grid.innerHTML = '';
+  st.lb = [];
+  const ids = st.cat === 'all' ? catsInMode() : [st.cat];
+  ids.forEach(cid => el.grid.appendChild(buildBlock(cid)));
+  layoutMosaics();
+  el.grid.querySelectorAll('.reveal, .block').forEach(n => io.observe(n));
 }
 
-// inject cardOut keyframe once
+function buildBlock(cid) {
+  const cat = CATS[cid];
+  const items = ITEMS.filter(i => i.cat === cid);
+  const sec = document.createElement('section');
+  sec.className = 'block b-' + cid;
+
+  if (cat.hero) {
+    items.forEach(it => { st.lb.push(it); sec.appendChild(buildHero(it)); });
+    return sec;
+  }
+
+  const [first, ...rest] = cat.label.split(' ');
+  const head = document.createElement('div');
+  head.className = 'block-head reveal';
+  head.innerHTML =
+    `<div><h2 class="block-title">${first}${rest.length ? ' <em>' + rest.join(' ') + '</em>' : ''}</h2>${SVG_WAVE}</div>` +
+    `<span class="block-meta">${String(items.length).padStart(2, '0')} ${items.length > 1 ? 'imagens' : 'imagem'}</span>`;
+  sec.appendChild(head);
+
+  if (cat.toggle) {
+    items.forEach(it => st.lb.push(it));
+    sec.appendChild(buildPlanCard(items));
+    return sec;
+  }
+
+  const mosaic = document.createElement('div');
+  mosaic.className = 'mosaic';
+  items.forEach((it, i) => {
+    st.lb.push(it);
+    const t = buildTile(it, i);
+    t.style.setProperty('--d', (i % 3) * 0.11 + 's');
+    mosaic.appendChild(t);
+  });
+  sec.appendChild(mosaic);
+  return sec;
+}
+
+function buildTile(item, n) {
+  const t = document.createElement('button');
+  t.type = 'button';
+  t.className = 'tile reveal s' + (n % 6) + (item.paper ? ' paper' : '');
+  const mc = item.m || (item.c >= 6 ? 2 : 1);
+  t.style.setProperty('--c', item.c);
+  t.style.setProperty('--r', item.r);
+  t.style.setProperty('--mc', mc);
+  t.style.setProperty('--mar', mc === 2 ? Math.min(1.7, Math.max(1.25, item.w / item.h)).toFixed(2) : (item.paper ? 1.1 : 1));
+  if (item.start) t.style.setProperty('--cs', item.start);
+  t.setAttribute('aria-label', item.title + (item.sub ? ' — ' + item.sub : ''));
+
+  const img = new Image();
+  img.src = item.thumb;
+  img.alt = item.title + ' — ' + item.sub;
+  img.decoding = 'async';
+  img.loading = 'lazy';
+  const ready = () => t.classList.add('ready');
+  img.addEventListener('load', ready);
+  img.addEventListener('error', ready);
+  t.appendChild(img);
+  if (img.complete) ready();
+
+  t.insertAdjacentHTML('beforeend', '<span class="tile-glow"></span>');
+  t.insertAdjacentHTML('beforeend', item.paper
+    ? `<span class="paper-tag"><b>${item.title}</b>${item.sub ? `<i>${item.sub}</i>` : ''}</span>`
+    : `<span class="tile-cap"><b>${item.title}</b><i>${item.sub}</i></span>`);
+  t.insertAdjacentHTML('beforeend', `<span class="tile-zoom">${SVG_ZOOM}</span>`);
+
+  // parallax da foto + brilho acompanhando o cursor
+  t.addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch' || REDUCED) return;
+    const r = t.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+    t.style.setProperty('--mx', (x - 0.5) * 2);
+    t.style.setProperty('--my', (y - 0.5) * 2);
+    t.style.setProperty('--px', (x * 100) + '%');
+    t.style.setProperty('--py', (y * 100) + '%');
+  });
+  t.addEventListener('pointerleave', () => { t.style.setProperty('--mx', 0); t.style.setProperty('--my', 0); });
+  t.addEventListener('click', () => openLb(item, t));
+  return t;
+}
+
+function buildPlanCard(items) {
+  const card = document.createElement('div');
+  card.className = 'plan-card reveal';
+  card.innerHTML = '<div class="plan-head"><div class="plan-name"></div><div class="plan-tabs"></div></div><div class="plan-body"></div><div class="plan-foot">Clique na planta para ampliar</div>';
+  const name = card.querySelector('.plan-name'), tabs = card.querySelector('.plan-tabs'), body = card.querySelector('.plan-body');
+  const imgs = [], btns = [];
+  const show = i => {
+    imgs.forEach((m, k) => m.classList.toggle('active', k === i));
+    btns.forEach((b, k) => b.classList.toggle('active', k === i));
+    name.innerHTML = items[i].title + '<small>' + items[i].sub + '</small>';
+  };
+  items.forEach((it, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'plan-tab'; b.textContent = it.title;
+    b.addEventListener('click', () => show(i));
+    tabs.appendChild(b); btns.push(b);
+    const m = new Image();
+    m.src = it.src; m.alt = it.title + ' — ' + it.sub; m.decoding = 'async';
+    m.addEventListener('click', () => openLb(it, null));
+    body.appendChild(m); imgs.push(m);
+  });
+  show(0);
+  return card;
+}
+
+function buildHero(item) {
+  const h = document.createElement('div');
+  h.className = 'hero reveal';
+  h.innerHTML =
+    `<div class="hero-text">
+       <span class="eyebrow">Destaque</span>
+       <h2>Entorno <em>3D</em></h2>
+       <p>${item.text}</p>
+       <button class="hero-btn" type="button">Ampliar imagem<span>${SVG_ZOOM}</span></button>
+     </div>
+     <figure class="hero-fig"><div class="hero-skeleton"></div></figure>`;
+  const fig = h.querySelector('.hero-fig');
+  const img = new Image();
+  img.src = item.src;                       // o destaque carrega a versão grande (nitidez em tela retina)
+  img.alt = item.title + ' — ' + item.sub;
+  img.decoding = 'async';
+  const ready = () => fig.classList.add('ready');
+  img.addEventListener('load', ready);
+  img.addEventListener('error', ready);
+  fig.appendChild(img);
+  if (img.complete) ready();
+
+  // inclinação 3D suave conforme o cursor
+  h.addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch' || REDUCED) return;
+    const r = h.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+    img.style.setProperty('--ry', (x * 9).toFixed(2) + 'deg');
+    img.style.setProperty('--rx', (-y * 7).toFixed(2) + 'deg');
+  });
+  h.addEventListener('pointerleave', () => { img.style.setProperty('--ry', '0deg'); img.style.setProperty('--rx', '0deg'); });
+  const open = () => openLb(item, null);
+  fig.addEventListener('click', open);
+  h.querySelector('.hero-btn').addEventListener('click', open);
+  return h;
+}
+
+// unidade de linha do mosaico = largura de uma coluna (cartões ficam proporcionais em qualquer tela)
+function layoutMosaics() {
+  const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 18;
+  el.grid.querySelectorAll('.mosaic').forEach(m => {
+    const u = (m.clientWidth - 11 * gap) / 12 * 0.62;
+    m.style.setProperty('--u', Math.max(28, u).toFixed(2) + 'px');
+  });
+}
+addEventListener('resize', () => { layoutMosaics(); moveInk(false); if (el.lb.classList.contains('open')) fitLb(st.lb[st.idx]); });
+
+// revelar ao rolar
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+}, { root: el.scroll, threshold: 0.08, rootMargin: '0px 0px -4% 0px' });
+
+// ── luz que acompanha o cursor ───────────────────────────────────
 (function () {
-  const s = document.createElement('style');
-  s.textContent = '@keyframes cardOut{to{opacity:0;transform:scale(0.97)}}';
-  document.head.appendChild(s);
+  const glow = $('glow');
+  if (REDUCED || matchMedia('(hover: none)').matches) return;
+  let tx = innerWidth / 2, ty = innerHeight / 3, x = tx, y = ty, raf = null;
+  const loop = () => {
+    x += (tx - x) * 0.07; y += (ty - y) * 0.07;
+    glow.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    raf = (Math.abs(tx - x) + Math.abs(ty - y) > 0.5) ? requestAnimationFrame(loop) : null;
+  };
+  addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; glow.classList.add('on'); if (!raf) raf = requestAnimationFrame(loop); });
+  document.addEventListener('pointerleave', () => glow.classList.remove('on'));
 }());
 
-function buildImgCard(item) {
-  const card = document.createElement('div');
-  card.className = 'g-card' + (item.isPlant ? ' is-plant' : '');
-
-  const img = document.createElement('img');
-  img.src = item.thumb || item.src;
-  img.alt = item.title;
-  img.loading = 'lazy';
-  img.decoding = 'async';
-  img.addEventListener('load',  () => card.classList.add('loaded'));
-  img.addEventListener('error', () => card.classList.add('loaded'));
-  if (img.complete) card.classList.add('loaded');
-
-  const ov = document.createElement('div');
-  ov.className = 'card-overlay';
-  ov.innerHTML = `<div class="card-title">${item.title}</div>` +
-    (item.subtitle ? `<div class="card-sub">${item.subtitle}</div>` :
-     item.subCategory ? `<div class="card-sub">${getSubLabel(item.category, item.subCategory)}</div>` : '');
-
-  const zoom = document.createElement('div');
-  zoom.className = 'card-zoom';
-  zoom.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>`;
-
-  card.appendChild(img);
-  card.appendChild(ov);
-  card.appendChild(zoom);
-  card.addEventListener('click', () => openLb(item));
-  return card;
-}
-
-function buildCobCard(item) {
-  const card = document.createElement('div');
-  card.className = 'g-card cob-card';
-
-  // Header
-  const hdr = document.createElement('div');
-  hdr.className = 'cob-header';
-
-  const tg = document.createElement('div');
-  tg.innerHTML = `<div class="cob-badge">${item.badge || 'Planta'}</div>
-    <div class="cob-name">${item.title}</div>
-    ${item.area ? `<div class="cob-area">${item.area}</div>` : ''}
-    ${item.subtitle ? `<div class="cob-sub">${item.subtitle}</div>` : ''}
-    <div class="cob-note"></div>`;
-
-  const tabs = document.createElement('div');
-  tabs.className = 'floor-tabs';
-
-  hdr.appendChild(tg);
-  hdr.appendChild(tabs);
-
-  // Body
-  const body = document.createElement('div');
-  body.className = 'cob-body';
-
-  // skeleton overlay for cob body
-  const skel = document.createElement('div');
-  skel.className = 'floor-skeleton';
-  body.appendChild(skel);
-
-  let loadedCount = 0;
-  item.floors.forEach((floor, fi) => {
-    // tab
-    const tab = document.createElement('button');
-    tab.className = 'floor-tab' + (fi === 0 ? ' active' : '');
-    tab.textContent = floor.label;
-    if (floor.note) tab.title = floor.note;
-    if (fi === 0 && floor.note) tg.querySelector('.cob-note').textContent = floor.note;
-    tab.addEventListener('click', () => {
-      tabs.querySelectorAll('.floor-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      body.querySelectorAll('.floor-wrap').forEach((w, wi) => w.classList.toggle('active', wi === fi));
-      tg.querySelector('.cob-note').textContent = floor.note || '';
-    });
-    tabs.appendChild(tab);
-
-    // image wrap
-    const wrap = document.createElement('div');
-    wrap.className = 'floor-wrap' + (fi === 0 ? ' active' : '');
-
-    const img = document.createElement('img');
-    img.src = floor.thumb || floor.src;
-    img.alt = floor.label;
-    img.loading = 'lazy';
-    img.decoding = 'async';
-    img.addEventListener('click', () => openLbFloor(item, fi));
-    const onImgLoad = () => {
-      img.classList.add('loaded');
-      loadedCount++;
-      if (loadedCount >= item.floors.length) body.classList.add('loaded');
-    };
-    img.addEventListener('load', onImgLoad);
-    img.addEventListener('error', onImgLoad);
-    if (img.complete) onImgLoad();
-
-    const lbl = document.createElement('div');
-    lbl.className = 'floor-lbl';
-    lbl.textContent = floor.label;
-
-    wrap.appendChild(img);
-    wrap.appendChild(lbl);
-    body.appendChild(wrap);
-  });
-
-  // Planta única (pavimento tipo, lazer): sem o que alternar, sem abas.
-  if (item.floors.length < 2) tabs.style.display = 'none';
-
-  // Footer — só a dica de uso; a alternância é pelas abas do cabeçalho.
-  const foot = document.createElement('div');
-  foot.className = 'cob-footer';
-
-  const hint = document.createElement('span');
-  hint.className = 'cob-hint';
-  hint.textContent = item.hint || (item.floors.length + ' pavimentos — alterne nas abas · toque para ampliar');
-  foot.appendChild(hint);
-
-  card.appendChild(hdr);
-  card.appendChild(body);
-  card.appendChild(foot);
-  return card;
-}
-
 // ── lightbox ─────────────────────────────────────────────────────
-function showLb() {
-  elLightbox.classList.add('open');
+function fitLb(item) {
+  if (!item) return;
+  const r = el.lbBody.getBoundingClientRect(), cs = getComputedStyle(el.lbBody);
+  const aw = r.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const ah = r.height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  const k = Math.min(aw / item.w, ah / item.h, 1.4);
+  el.lbImg.style.width = Math.round(item.w * k) + 'px';
+  el.lbImg.style.height = Math.round(item.h * k) + 'px';
+}
+
+function setLbImage(item) {
+  el.lbImg.classList.toggle('on-paper', !!item.paper);
+  el.lbImg.classList.toggle('bare', !!item.hero);
+  fitLb(item);
+  el.lbImg.alt = item.title + ' — ' + item.sub;
+  if (item.paper || item.hero) { el.lbImg.src = item.src; return; }   // desenhos e 3D: sempre a versão grande
+  el.lbImg.src = item.thumb;                  // já está em cache (veio da grade): aparece na hora…
+  const full = new Image();
+  full.src = item.src;
+  full.decode().catch(() => {}).then(() => { if (st.lb[st.idx] === item) el.lbImg.src = item.src; });   // …e troca pela versão grande
+}
+
+function setLbText(item) {
+  el.lbTitle.textContent = item.title;
+  el.lbSub.textContent = item.sub || '';
+  el.lbCounter.textContent = (st.idx + 1) + ' / ' + st.lb.length;
+  el.lbNotice.textContent = NOTICE;
+  el.lbPrev.disabled = st.idx === 0;
+  el.lbNext.disabled = st.idx === st.lb.length - 1;
+}
+
+function openLb(item, fromEl) {
+  st.idx = st.lb.indexOf(item);
+  if (st.idx < 0) return;
+  if (window._lbResetZoom) window._lbResetZoom();
+  setLbText(item);
+  setLbImage(item);
+  el.lb.classList.add('open');
   document.addEventListener('keydown', onLbKey);
-}
 
-function openLb(item) {
-  st.lbIdx = st.lbItems.findIndex(i => i.id === item.id);
-  elLbImg.style.display = '';
-  elLbPrev.style.display = '';
-  elLbNext.style.display = '';
-  updateLb();
-  showLb();
-}
-
-function openLbFloor(item, fi) {
-  elLbImg.style.display = '';
-  elLbPrev.style.display = 'none';
-  elLbNext.style.display = 'none';
-  elLbImg.src = item.floors[fi].src;
-  elLbTitle.textContent = item.title;
-  elLbSub.textContent = item.floors[fi].label + (item.floors[fi].note ? ' · ' + item.floors[fi].note : '');
-  elLbCounter.textContent = '';
-  elLbNotice.textContent = item.notice || 'As plantas pertencem à mesma unidade';
-  showLb();
+  if (REDUCED || !el.lbImg.animate) return;
+  const to = el.lbImg.getBoundingClientRect();
+  if (fromEl && !item.paper) {
+    // a foto "sai" do cartão e se acomoda no palco (cover → contain, sem distorcer)
+    const r = fromEl.getBoundingClientRect();
+    const s = Math.max(r.width / to.width, r.height / to.height);
+    const dx = (r.left + r.width / 2) - (to.left + to.width / 2), dy = (r.top + r.height / 2) - (to.top + to.height / 2);
+    const ix = Math.max(0, (to.width - r.width / s) / 2), iy = Math.max(0, (to.height - r.height / s) / 2);
+    el.lbImg.animate([
+      { transform: `translate(${dx}px, ${dy}px) scale(${s})`, clipPath: `inset(${iy}px ${ix}px round ${60 / s}px)` },
+      { transform: 'translate(0, 0) scale(1)', clipPath: 'inset(0px round 18px)' },
+    ], { duration: 780, easing: 'cubic-bezier(0.2, 0.85, 0.25, 1)' });
+  } else {
+    el.lbImg.animate([
+      { opacity: 0, transform: 'scale(0.92) translateY(18px)', filter: 'blur(12px)' },
+      { opacity: 1, transform: 'none', filter: 'blur(0)' },
+    ], { duration: 700, easing: 'cubic-bezier(0.22, 0.8, 0.24, 1)' });
+  }
 }
 
 function closeLb() {
-  elLightbox.classList.remove('open');
+  el.lb.classList.remove('open');
   document.removeEventListener('keydown', onLbKey);
   if (window._lbResetZoom) window._lbResetZoom();
-  setTimeout(() => {
-    elLbImg.style.display = '';
-    elLbPrev.style.display = '';
-    elLbNext.style.display = '';
-  }, 300);
-}
-
-function updateLb(dir) {
-  const item = st.lbItems[st.lbIdx];
-  if (!item) return;
-
-  // Textos/contador atualizam de imediato
-  elLbTitle.textContent = item.title;
-  elLbSub.textContent = item.subtitle || (item.subCategory ? getSubLabel(item.category, item.subCategory) : '');
-  elLbCounter.textContent = (st.lbIdx + 1) + ' / ' + st.lbItems.length;
-  elLbNotice.textContent = '';
-  elLbPrev.disabled = st.lbIdx === 0;
-  elLbNext.disabled = st.lbIdx === st.lbItems.length - 1;
-
-  if (st._lbSwapT) clearTimeout(st._lbSwapT);
-  elLbImg.classList.remove('o-next','o-prev','i-next','i-prev','i-fade');
-
-  const swap = () => {
-    elLbImg.src = item.src;
-    elLbImg.style.opacity = '1';
-    elLbImg.classList.remove('o-next','o-prev');
-    void elLbImg.offsetWidth; // reinicia a animação
-    elLbImg.classList.add(dir === -1 ? 'i-prev' : dir === 1 ? 'i-next' : 'i-fade');
-  };
-
-  if (dir === 1 || dir === -1) {
-    // fase 1: imagem atual desliza para fora no sentido da navegação
-    void elLbImg.offsetWidth;
-    elLbImg.classList.add(dir === 1 ? 'o-next' : 'o-prev');
-    st._lbSwapT = setTimeout(swap, 150);   // fase 2: nova entra pelo lado oposto
-  } else {
-    elLbImg.style.opacity = '0';
-    st._lbSwapT = setTimeout(swap, 110);
-  }
 }
 
 function navLb(dir) {
-  const ni = st.lbIdx + dir;
-  if (ni < 0 || ni >= st.lbItems.length) return;
-  st.lbIdx = ni;
+  const ni = st.idx + dir;
+  if (ni < 0 || ni >= st.lb.length) return;
+  st.idx = ni;
+  const item = st.lb[ni];
   if (window._lbResetZoom) window._lbResetZoom();
-  updateLb(dir);
+  setLbText(item);
+  if (REDUCED || !el.lbImg.animate) { setLbImage(item); return; }
+  // a imagem atual escorrega para fora; a nova entra do lado oposto
+  const out = el.lbImg.animate(
+    [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${-dir * 7}vw) scale(0.96)`, filter: 'blur(8px)' }],
+    { duration: 220, easing: 'ease-in', fill: 'forwards' });
+  out.onfinish = () => {
+    setLbImage(item);
+    out.cancel();
+    el.lbImg.animate(
+      [{ opacity: 0, transform: `translateX(${dir * 8}vw) scale(0.96)`, filter: 'blur(8px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }],
+      { duration: 620, easing: 'cubic-bezier(0.22, 0.8, 0.24, 1)' });
+  };
 }
 
 function onLbKey(e) {
-  if (e.key === 'Escape')      closeLb();
-  if (e.key === 'ArrowLeft')   navLb(-1);
-  if (e.key === 'ArrowRight')  navLb(1);
+  if (e.key === 'Escape') closeLb();
+  if (e.key === 'ArrowLeft') navLb(-1);
+  if (e.key === 'ArrowRight') navLb(1);
 }
 
-// ── 3DVista close communication ───────────────────────────────────
+// ── fechar (3DVista) ─────────────────────────────────────────────
 function closeGallery() {
-  if (window.parent !== window) {
-    window.parent.postMessage({ action: 'closeGallery' }, '*');
-  }
+  if (window.parent !== window) window.parent.postMessage({ action: 'closeGallery' }, '*');
 }
 
-// ── init ──────────────────────────────────────────────────────────
+// ── init ─────────────────────────────────────────────────────────
 function init() {
-  // Filtro inicial depende do modo
-  if (MODE === 'plantas') {
-    st.cat = DISPLAY_CATS[0].id;  // primeira tipologia de plantas
-    st.sub = null;
-  } else {
-    st.cat = DISPLAY_CATS[0].id;               // 'fachada'
-    const c0 = getCat(st.cat);
-    st.sub = (c0 && c0.subs && c0.subs.length) ? c0.subs[0].id : null;  // pré-seleciona 1ª sub
-  }
-
-  renderMainFilters();
-  renderSubFilters();
+  renderChips();
   renderGallery();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { moveInk(false); layoutMosaics(); });
 
   $('btn-close').addEventListener('click', closeGallery);
   $('lb-close').addEventListener('click', closeLb);
-  elLbPrev.addEventListener('click', () => navLb(-1));
-  elLbNext.addEventListener('click', () => navLb(1));
-  $('lb-body').addEventListener('click', e => { if (e.target === $('lb-body')) closeLb(); });
+  el.lbPrev.addEventListener('click', () => navLb(-1));
+  el.lbNext.addEventListener('click', () => navLb(1));
+  el.lbBody.addEventListener('click', e => { if (e.target === el.lbBody) closeLb(); });
 }
 
-// ── zoom + pan in lightbox ───────────────────────────────────────
+// ── zoom + pan no lightbox ───────────────────────────────────────
 (function () {
-  const img      = document.getElementById('lb-img');
-  const body     = document.getElementById('lb-body');
-  const btnIn    = document.getElementById('lb-zoom-in');
-  const btnOut   = document.getElementById('lb-zoom-out');
-  const lblLevel = document.getElementById('lb-zoom-level');
-
+  const img = el.lbImg, body = el.lbBody;
+  const btnIn = $('lb-zoom-in'), btnOut = $('lb-zoom-out'), lbl = $('lb-zoom-level');
   const MIN = 1, MAX = 5;
   let z = 1, px = 0, py = 0;
   let dragging = false, dragX = 0, dragY = 0, basePx = 0, basePy = 0;
   let pinchDist = null, touchX = 0, touchY = 0, touchPrevX = 0, touchPrevY = 0;
 
-  // transform: translate(px, py) scale(z) com transform-origin: center
-  // fórmula correta: px += (cursorX - imgCenterX) * (1 - nz/z)
-  function applyTransform(smooth) {
-    img.style.transition = smooth ? 'transform 0.18s ease-out' : 'none';
-    img.style.transform  = (z === 1 && px === 0 && py === 0)
-      ? '' : `translate(${px}px,${py}px) scale(${z})`;
+  function apply(smooth) {
+    img.style.transition = smooth ? 'transform 0.35s cubic-bezier(0.22, 0.8, 0.24, 1)' : 'none';
+    img.style.transform = (z === 1 && px === 0 && py === 0) ? '' : `translate(${px}px,${py}px) scale(${z})`;
     img.classList.toggle('zoomed', z > 1);
-    lblLevel.textContent = Math.round(z * 100) + '%';
+    lbl.textContent = Math.round(z * 100) + '%';
     btnOut.disabled = z <= MIN;
-    btnIn.disabled  = z >= MAX;
+    btnIn.disabled = z >= MAX;
   }
+  function reset() { z = 1; px = 0; py = 0; img.classList.remove('zoomed', 'dragging'); apply(true); }
 
-  function resetZoom() {
-    z = 1; px = 0; py = 0;
-    img.classList.remove('zoomed', 'dragging');
-    applyTransform(true);
-  }
-
-  function zoomAt(dz, clientX, clientY, smooth) {
+  function zoomAt(dz, cx0, cy0, smooth) {
     const nz = Math.min(Math.max(z + dz, MIN), MAX);
     if (nz === z) return;
     const r = img.getBoundingClientRect();
-    const cx = r.left + r.width  / 2;  // centro atual da imagem na tela
-    const cy = r.top  + r.height / 2;
     // mantém o ponto sob o cursor fixo após a mudança de escala
-    px += (clientX - cx) * (1 - nz / z);
-    py += (clientY - cy) * (1 - nz / z);
+    px += (cx0 - (r.left + r.width / 2)) * (1 - nz / z);
+    py += (cy0 - (r.top + r.height / 2)) * (1 - nz / z);
     z = nz;
-    applyTransform(!!smooth);
+    if (z === 1) { px = 0; py = 0; }
+    apply(!!smooth);
   }
+  const center = () => { const r = body.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; };
 
-  function bodyCenter() {
-    const r = body.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-  }
+  btnIn.addEventListener('click', () => { const c = center(); zoomAt(+0.5, c.x, c.y, true); });
+  btnOut.addEventListener('click', () => { const c = center(); zoomAt(-0.5, c.x, c.y, true); });
+  img.addEventListener('dblclick', e => { e.stopPropagation(); if (z > 1) reset(); else zoomAt(+2, e.clientX, e.clientY, true); });
 
-  // botões +/−: zoom em direção ao centro do viewport
-  btnIn.addEventListener('click',  () => { const c = bodyCenter(); zoomAt(+0.5, c.x, c.y, true); });
-  btnOut.addEventListener('click', () => { const c = bodyCenter(); zoomAt(-0.5, c.x, c.y, true); });
-
-  // duplo clique: +2× no ponto clicado, ou reset
-  img.addEventListener('dblclick', e => {
-    e.stopPropagation();
-    if (z > 1) resetZoom(); else zoomAt(+2, e.clientX, e.clientY, true);
-  });
-
-  // roda do mouse: zoom suave no cursor
   let wheelRaf = null;
   body.addEventListener('wheel', e => {
-    if (!document.getElementById('lightbox').classList.contains('open')) return;
+    if (!el.lb.classList.contains('open')) return;
     e.preventDefault();
     const dz = e.deltaY < 0 ? 0.25 : -0.25;
-    // cancelar transição durante scroll rápido para resposta imediata
     if (wheelRaf) cancelAnimationFrame(wheelRaf);
-    wheelRaf = requestAnimationFrame(() => {
-      zoomAt(dz, e.clientX, e.clientY, false);
-      wheelRaf = null;
-    });
+    wheelRaf = requestAnimationFrame(() => { zoomAt(dz, e.clientX, e.clientY, false); wheelRaf = null; });
   }, { passive: false });
 
-  // arrasto com mouse (pan quando ampliado)
   img.addEventListener('mousedown', e => {
     if (z <= 1) return;
     e.preventDefault();
-    dragging = true;
-    dragX = e.clientX; dragY = e.clientY;
-    basePx = px; basePy = py;
+    dragging = true; dragX = e.clientX; dragY = e.clientY; basePx = px; basePy = py;
     img.classList.add('dragging');
   });
-  window.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    px = basePx + (e.clientX - dragX);
-    py = basePy + (e.clientY - dragY);
-    applyTransform(false);
-  });
-  window.addEventListener('mouseup', () => {
-    if (!dragging) return;
-    dragging = false;
-    img.classList.remove('dragging');
-  });
+  addEventListener('mousemove', e => { if (!dragging) return; px = basePx + (e.clientX - dragX); py = basePy + (e.clientY - dragY); apply(false); });
+  addEventListener('mouseup', () => { if (!dragging) return; dragging = false; img.classList.remove('dragging'); });
 
-  // touch: swipe (z=1) ou pan (z>1) ou pinch zoom
   body.addEventListener('touchstart', e => {
     if (e.touches.length === 2) {
-      pinchDist = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
+      pinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
     } else {
       pinchDist = null;
       touchX = touchPrevX = e.touches[0].clientX;
       touchY = touchPrevY = e.touches[0].clientY;
     }
   }, { passive: true });
-
   body.addEventListener('touchmove', e => {
     if (e.touches.length === 2 && pinchDist !== null) {
       e.preventDefault();
-      const d  = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-      const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-      zoomAt((d - pinchDist) * 0.018, cx, cy, false);
+      const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      zoomAt((d - pinchDist) * 0.018, (e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2, false);
       pinchDist = d;
     } else if (e.touches.length === 1 && z > 1) {
       e.preventDefault();
-      px += e.touches[0].clientX - touchPrevX;
-      py += e.touches[0].clientY - touchPrevY;
-      touchPrevX = e.touches[0].clientX;
-      touchPrevY = e.touches[0].clientY;
-      applyTransform(false);
+      px += e.touches[0].clientX - touchPrevX; py += e.touches[0].clientY - touchPrevY;
+      touchPrevX = e.touches[0].clientX; touchPrevY = e.touches[0].clientY;
+      apply(false);
     }
   }, { passive: false });
-
   body.addEventListener('touchend', e => {
     if (pinchDist !== null) { pinchDist = null; return; }
     if (z > 1) return;
-    const dx = e.changedTouches[0].clientX - touchX;
-    const dy = e.changedTouches[0].clientY - touchY;
+    const dx = e.changedTouches[0].clientX - touchX, dy = e.changedTouches[0].clientY - touchY;
     if (Math.abs(dx) > 40 && Math.abs(dy) < 40) navLb(dx < 0 ? 1 : -1);
   }, { passive: true });
 
-  window._lbResetZoom = resetZoom;
-  applyTransform(false);
+  window._lbResetZoom = reset;
+  apply(false);
 }());
 
 document.addEventListener('DOMContentLoaded', init);

@@ -1,55 +1,30 @@
-# Trechos para colar no 3DVista — Trend
-
-Copie daqui. Cada bloco é independente.
-
----
+# Trechos para colar no 3DVista — Horizon
 
 ## 1. Loader — cole no **JavaScript global do projeto** (roda uma vez)
 
 ```js
 (function(){
   var s = document.createElement('script');
-  s.src = 'https://skylineip.s3.sa-east-1.amazonaws.com/Tour+Virtual/saraiva-rezende/trend/ferramentas/inject.js?v=' + Date.now();
+  s.src = 'https://skylineip.s3.sa-east-1.amazonaws.com/Tour+Virtual/makeit/horizon/ferramentas/galeria/inject.js?v=' + Date.now();
   document.head.appendChild(s);
 })();
 ```
 
----
-
-## 2. Galerias — cole na **action** do hotspot/botão
-
-Abrir a galeria de imagens:
+## 2. Botões — cole na **action** do hotspot/botão
 
 ```js
-GaleriaImagens(1);
+GaleriaImagens(1);   // abre a galeria de imagens   · GaleriaImagens(0) fecha
+GaleriaPlantas(1);   // abre plantas + entorno 3D   · GaleriaPlantas(0) fecha
 ```
 
-Fechar a galeria de imagens:
+## 3. Fade global na troca de período (diurno ↔ entardecer)
 
-```js
-GaleriaImagens(0);
-```
+No botão de troca, monte a sequência de ações nesta ordem:
 
-Abrir a galeria de plantas:
+1. **JavaScript:** `FadePeriodo(1);`        (tela escurece)
+2. **Wait / Delay:** 500 ms                  (espera o fade terminar)
+3. *Ação original de troca de período*
+4. **Wait / Delay:** 300 ms                  (deixa o novo período carregar)
+5. **JavaScript:** `FadePeriodo(0);`        (tela revela)
 
-```js
-GaleriaPlantas(1);
-```
-
-Fechar a galeria de plantas:
-
-```js
-GaleriaPlantas(0);
-```
-
-Abrir o vídeo:
-
-```js
-AbrirGaleriaVideos(1);
-```
-
-Fechar o vídeo:
-
-```js
-AbrirGaleriaVideos(0);
-```
+Opcional: `FadePeriodo(1, 700, '#8A122B')` muda duração e cor da cortina.
